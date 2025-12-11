@@ -28,18 +28,12 @@ async function main() {
 
     // 1. Deploy Contracts to Sepolia
     console.log("[Startup] Deploying contracts to Sepolia...");
-    const deployProc = spawn('npx', ['hardhat', 'run', 'scripts/deploy.js', '--network', 'sepolia'], {
-        cwd: path.resolve(__dirname, '..'),
-        shell: true,
-        stdio: 'inherit'
-    });
-
-    deployProc.on('close', (code) => {
-        if (code !== 0) {
-            console.error("\x1b[31m[Startup] Deployment failed. Aborting startup.\x1b[0m");
-            process.exit(1);
-        }
-
+    const { execSync } = require('child_process');
+    try {
+        execSync('npx hardhat run scripts/deploy.js --network sepolia', {
+            cwd: path.resolve(__dirname, '..'),
+            stdio: 'inherit'
+        });
         console.log("\x1b[32m[Startup] Contracts deployed to Sepolia! Starting services...\x1b[0m");
 
         // 2. Start Backend
@@ -50,7 +44,11 @@ async function main() {
 
         // 4. Start Frontend
         runProcess('npm', ['run', 'dev'], path.resolve(__dirname, '../frontend'), 'FRONTEND', '32'); // Green
-    });
+
+    } catch (error) {
+        console.error("\x1b[31m[Startup] Deployment failed. Aborting startup.\x1b[0m");
+        process.exit(1);
+    }
 }
 
 main();
