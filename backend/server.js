@@ -5,7 +5,7 @@ const cors = require('cors');
 const { ethers } = require('ethers');
 const { Policy, OracleReport, Payout } = require('./models');
 
-const CONTRACT_ABI = require('./abis/AgriChainPolicy.json').abi;
+const CONTRACT_ABI = require('./abis/AgriChainPolicy.json');
 const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
 const RPC_URL = process.env.RPC_URL || "http://127.0.0.1:8545";
 

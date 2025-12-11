@@ -1,11 +1,11 @@
-require('dotenv').config();
+require('dotenv').config({ path: '../keys/.env' });
 const axios = require('axios');
 const { ethers } = require('ethers');
 
 const PRIVATE_KEY = process.env.ORACLE_PRIVATE_KEY;
 const RPC_URL = process.env.RPC_URL || "http://127.0.0.1:8545";
 const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
-const CONTRACT_ABI = require('../artifacts/contracts/AgriChainPolicy.sol/AgriChainPolicy.json').abi;
+const CONTRACT_ABI = require('../keys/abis/AgriChainPolicy.json');
 
 const WEATHER_API = process.env.WEATHER_API_URL;
 
