@@ -7,7 +7,7 @@ const RPC_URL = process.env.RPC_URL || "http://127.0.0.1:8545";
 const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
 const CONTRACT_ABI = require('../artifacts/contracts/AgriChainPolicy.sol/AgriChainPolicy.json').abi;
 
-const WEATHER_API = "https://archive-api.open-meteo.com/v1/archive";
+const WEATHER_API = process.env.WEATHER_API_URL;
 
 async function main() {
     if (!PRIVATE_KEY || !CONTRACT_ADDRESS) {

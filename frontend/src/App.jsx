@@ -38,7 +38,7 @@ function App() {
             const loadedPolicies = [];
 
             try {
-                const res = await axios.get(`http://localhost:5000/api/policies/${account}`);
+                const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/policies/${account}`);
                 setPolicies(res.data);
             } catch (e) {
                 console.log("Backend not reachable, showing empty or mock");
@@ -69,7 +69,7 @@ function App() {
             alert("Policy Created!");
             fetchPolicies();
 
-            await axios.post('http://localhost:5000/api/policies', {
+            await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/policies`, {
                 policyId: Date.now(),
                 farmer: account,
                 indexId: indexIdStr,
