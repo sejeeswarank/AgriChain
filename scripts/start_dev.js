@@ -24,31 +24,16 @@ function runProcess(command, args, cwd, name, color) {
 }
 
 async function main() {
-    console.log("\x1b[32mStarting AgriChain Full Stack Development Environment (Sepolia Mode)...\x1b[0m");
+    console.log("\x1b[32m[Startup] Starting AgriChain Services...\x1b[0m");
 
-    // 1. Deploy Contracts to Sepolia
-    console.log("[Startup] Deploying contracts to Sepolia...");
-    const { execSync } = require('child_process');
-    try {
-        execSync('npx hardhat run scripts/deploy.js --network sepolia', {
-            cwd: path.resolve(__dirname, '..'),
-            stdio: 'inherit'
-        });
-        console.log("\x1b[32m[Startup] Contracts deployed to Sepolia! Starting services...\x1b[0m");
+    // 1. Start Backend
+    runProcess('npm', ['start'], path.resolve(__dirname, '../backend'), 'BACKEND', '33'); // Yellow
 
-        // 2. Start Backend
-        runProcess('npm', ['start'], path.resolve(__dirname, '../backend'), 'BACKEND', '33'); // Yellow
+    // 2. Start Oracle
+    runProcess('npm', ['start'], path.resolve(__dirname, '../oracle-service'), 'ORACLE', '35'); // Magenta
 
-        // 3. Start Oracle
-        runProcess('npm', ['start'], path.resolve(__dirname, '../oracle-service'), 'ORACLE', '35'); // Magenta
-
-        // 4. Start Frontend
-        runProcess('npm', ['run', 'dev'], path.resolve(__dirname, '../frontend'), 'FRONTEND', '32'); // Green
-
-    } catch (error) {
-        console.error("\x1b[31m[Startup] Deployment failed. Aborting startup.\x1b[0m");
-        process.exit(1);
-    }
+    // 3. Start Frontend
+    runProcess('npm', ['run', 'dev'], path.resolve(__dirname, '../frontend'), 'FRONTEND', '32'); // Green
 }
 
 main();
