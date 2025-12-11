@@ -25,6 +25,36 @@ async function main() {
         console.error("Failed to export ABIs:", error);
     }
 
+    // Update .env with new contract address
+    const fs = require('fs');
+    const path = require('path');
+    const envPath = path.join(__dirname, '../keys/.env');
+
+    if (fs.existsSync(envPath)) {
+        let envContent = fs.readFileSync(envPath, 'utf8');
+        const regex = /^CONTRACT_ADDRESS=.*$/m;
+        const newEntry = `CONTRACT_ADDRESS=${agriChain.target}`;
+
+        if (regex.test(envContent)) {
+            envContent = envContent.replace(regex, newEntry);
+        } else {
+            envContent += `\n${newEntry}`;
+        }
+
+        const viteRegex = /^VITE_CONTRACT_ADDRESS=.*$/m;
+        const newViteEntry = `VITE_CONTRACT_ADDRESS=${agriChain.target}`;
+        if (viteRegex.test(envContent)) {
+            envContent = envContent.replace(viteRegex, newViteEntry);
+        } else {
+            envContent += `\n${newViteEntry}`;
+        }
+
+        fs.writeFileSync(envPath, envContent);
+        console.log(`Updated .env with new Contract Address: ${agriChain.target}`);
+    } else {
+        console.warn(".env file not found at " + envPath);
+    }
+
     console.log("Deployment and configuration setup complete.");
 }
 
