@@ -27,13 +27,17 @@ AgriChain is a full-stack decentralized application (dApp) that provides automat
    ```bash
    npx hardhat run scripts/deploy.js --network localhost
    ```
-   *Copy the deployed Contract Address and Paste it into `backend/server.js`, `oracle-service/index.js`, and `frontend/src/App.jsx`.*
+   ```bash
+   npx hardhat run scripts/deploy.js --network localhost
+   ```
+   *Copy the deployed Contract Address and update `CONTRACT_ADDRESS` in `keys/.env`.*
 
 ### 2. Backend Server
 1. Navigate to backend: `cd backend`
 2. Install dependencies: `npm install`
-3. Configure `.env` (optional, defaults in code or create new one):
+3. ensure `keys/.env` is configured (env vars are loaded from `../keys/.env`).
    ```env
+   # In keys/.env
    MONGO_URI=mongodb://localhost:27017/agrichain
    RPC_URL=http://127.0.0.1:8545
    CONTRACT_ADDRESS=<PASTE_ADDRESS_HERE>
@@ -46,8 +50,9 @@ AgriChain is a full-stack decentralized application (dApp) that provides automat
 ### 3. Oracle Service
 1. Navigate to oracle: `cd ../oracle-service`
 2. Install dependencies: `npm install`
-3. Configure `.env`:
+3. Ensure `keys/.env` has the Oracle configuration:
    ```env
+   # In keys/.env
    RPC_URL=http://127.0.0.1:8545
    CONTRACT_ADDRESS=<PASTE_ADDRESS_HERE>
    ORACLE_PRIVATE_KEY=<PRIVATE_KEY_FROM_HARDHAT_NODE_ACCOUNT_0>
