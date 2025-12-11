@@ -24,21 +24,11 @@ function runProcess(command, args, cwd, name, color) {
 }
 
 async function main() {
-    console.log("\x1b[32mStarting AgriChain Full Stack Development Environment...\x1b[0m");
+    console.log("\x1b[32mStarting AgriChain Full Stack Development Environment (Sepolia Mode)...\x1b[0m");
 
-    // 1. Start Hardhat Node
-    const nodeProcess = runProcess('npx', ['hardhat', 'node'], path.resolve(__dirname, '..'), 'NODE', '36'); // Cyan
-
-    // Wait for node to be ready (look for "Started HTTP and WebSocket JSON-RPC server")
-    console.log("[Startup] Waiting for blockchain to initialize...");
-
-    // We'll give it a fixed 5 seconds for simplicity, real check is complex with streams
-    await new Promise(resolve => setTimeout(resolve, 5000));
-
-    // 2. Deploy Contracts
-    console.log("[Startup] Blockchain ready. Deploying contracts...");
-    // We use stdio: inherit here to show deploy logs directly
-    const deployProc = spawn('npx', ['hardhat', 'run', 'scripts/deploy.js', '--network', 'localhost'], {
+    // 1. Deploy Contracts to Sepolia
+    console.log("[Startup] Deploying contracts to Sepolia...");
+    const deployProc = spawn('npx', ['hardhat', 'run', 'scripts/deploy.js', '--network', 'sepolia'], {
         cwd: path.resolve(__dirname, '..'),
         shell: true,
         stdio: 'inherit'
@@ -47,19 +37,18 @@ async function main() {
     deployProc.on('close', (code) => {
         if (code !== 0) {
             console.error("\x1b[31m[Startup] Deployment failed. Aborting startup.\x1b[0m");
-            nodeProcess.kill();
             process.exit(1);
         }
 
-        console.log("\x1b[32m[Startup] Contracts deployed! Starting services...\x1b[0m");
+        console.log("\x1b[32m[Startup] Contracts deployed to Sepolia! Starting services...\x1b[0m");
 
-        // 3. Start Backend
+        // 2. Start Backend
         runProcess('npm', ['start'], path.resolve(__dirname, '../backend'), 'BACKEND', '33'); // Yellow
 
-        // 4. Start Oracle
+        // 3. Start Oracle
         runProcess('npm', ['start'], path.resolve(__dirname, '../oracle-service'), 'ORACLE', '35'); // Magenta
 
-        // 5. Start Frontend
+        // 4. Start Frontend
         runProcess('npm', ['run', 'dev'], path.resolve(__dirname, '../frontend'), 'FRONTEND', '32'); // Green
     });
 }
