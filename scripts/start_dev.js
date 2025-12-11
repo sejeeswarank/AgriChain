@@ -33,7 +33,7 @@ async function main() {
     runProcess('npm', ['start'], path.resolve(__dirname, '../oracle-service'), 'ORACLE', '35'); // Magenta
 
     // 3. Start Frontend
-    runProcess('npm', ['run', 'dev'], path.resolve(__dirname, '../frontend'), 'FRONTEND', '32'); // Green
+    runProcess('npm', ['run', 'dev', '--', '--open'], path.resolve(__dirname, '../frontend'), 'FRONTEND', '32'); // Green
 }
 
 main();

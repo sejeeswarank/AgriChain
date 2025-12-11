@@ -90,7 +90,7 @@ function App() {
     return (
         <div className="container">
             <header className="header">
-                <h1>🌱 AgriChain Insurance</h1>
+                <h1>AgriChain Insurance</h1>
                 {!account ? (
                     <button className="btn btn-primary" onClick={connectWallet}>Connect Wallet</button>
                 ) : (
