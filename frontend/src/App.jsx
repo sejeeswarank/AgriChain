@@ -57,12 +57,24 @@ function App() {
                 const { latitude, longitude } = pos.coords;
                 setLat(latitude);
                 setLon(longitude);
+                await reverseGeocode(latitude, longitude);
                 await getRecommendation(latitude, longitude);
                 setLoadingRec(false);
             }, () => {
                 alert("Geolocation failed");
                 setLoadingRec(false);
             });
+        }
+    };
+
+    const reverseGeocode = async (lat, lon) => {
+        try {
+            const res = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+            if (res.data && res.data.display_name) {
+                setLocationQuery(res.data.display_name.split(',')[0]); // Just city
+            }
+        } catch (e) {
+            console.error("Reverse geocode failed", e);
         }
     };
 
@@ -173,12 +185,17 @@ function App() {
                         📍 Use My Current Location
                     </button>
 
+                    {loadingRec && <p style={{ marginTop: '10px', color: '#3498db' }}>Fetching location data...</p>}
+
                     {recommendation && (
                         <div style={{ background: '#f0f9ff', padding: '15px', borderRadius: '10px', marginTop: '20px', borderLeft: '5px solid #3498db' }}>
                             <h3 style={{ margin: '0 0 10px 0', color: '#2980b9' }}>🤖 AI Policy Recommendation</h3>
                             <p><strong>Risk Level:</strong> {recommendation.riskLevel}</p>
                             <p><strong>Reason:</strong> {recommendation.reason}</p>
-                            <p><strong>Avg Rainfall (30d):</strong> {recommendation.stats.avgRainfall}mm</p>
+                            <p><strong>Avg Rainfall (60d):</strong> {recommendation.stats.avgRainfall}mm</p>
+                            <p><strong>Total Rainfall (60d):</strong> {recommendation.stats.totalRainfall}mm</p>
+                            <p><strong>Dry Days:</strong> {recommendation.stats.dryDays}</p>
+                            <button onClick={() => lat && lon && getRecommendation(lat, lon)} style={{ marginTop: '10px', background: '#3498db', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '5px' }}>🔄 Refresh</button>
                         </div>
                     )}
                 </div>
@@ -219,7 +236,7 @@ function App() {
                     </div>
 
                     <button className="btn btn-primary" style={{ width: '100%', marginTop: '20px', fontSize: '1.1em', padding: '15px' }} onClick={buyPolicy} disabled={loading || !account}>
-                        {loading ? "Processing..." : `🛡️ Protect for ${premium} ETH`}
+                        {loading ? "Processing..." : `🛡️ Protect for ${premium} ETH ${ethRates.usd ? `($${(parseFloat(premium) * ethRates.usd).toFixed(2)} USD / ₹${(parseFloat(premium) * ethRates.inr).toFixed(2)} INR)` : ''} & Activate`}
                     </button>
                 </div>
             </div>

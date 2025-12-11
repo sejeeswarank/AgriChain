@@ -191,8 +191,8 @@ app.post('/api/recommend-policy', async (req, res) => {
         const rainData = weatherRes.data.daily.rain_sum || [];
 
         // 2. Calculate Stats
-        const avgRainfall = rainData.reduce((a, b) => a + b, 0) / rainData.length;
         const totalRainfall = rainData.reduce((a, b) => a + b, 0);
+        const avgRainfall = totalRainfall / rainData.length;
         const dryDays = rainData.filter(r => r < 1.0).length;
 
         // 3. Determine Risk & Policy
@@ -221,6 +221,7 @@ app.post('/api/recommend-policy', async (req, res) => {
             reason,
             stats: {
                 avgRainfall: avgRainfall.toFixed(2),
+                totalRainfall: totalRainfall.toFixed(1),
                 dryDays
             }
         });
