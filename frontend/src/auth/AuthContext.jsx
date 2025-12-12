@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { auth, onAuthStateChanged, signOut, createUserProfile } from '../firebase';
+import { auth, onAuthStateChanged, signOut, createUserProfile, isSignInWithEmailLink, signInWithEmailLink } from '../firebase';
 
 const AuthContext = createContext();
 
@@ -17,6 +17,28 @@ export const AuthProvider = ({ children }) => {
     const [userProfile, setUserProfile] = useState(null);
 
     useEffect(() => {
+        // Handle email link sign-in
+        if (isSignInWithEmailLink(window.location.href)) {
+            let email = localStorage.getItem('emailForSignIn');
+            if (!email) {
+                // User opened the link on a different device. Ask for email
+                email = window.prompt('Please provide your email for confirmation');
+            }
+
+            if (email) {
+                signInWithEmailLink(email, window.location.href)
+                    .then(() => {
+                        // Clear email from storage
+                        localStorage.removeItem('emailForSignIn');
+                        // Remove the sign-in link parameters from URL
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    })
+                    .catch((error) => {
+                        console.error('Error signing in with email link:', error);
+                    });
+            }
+        }
+
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
             if (firebaseUser) {
                 setUser(firebaseUser);

@@ -1,6 +1,6 @@
 // Firebase Configuration and Exports
 import { initializeApp } from 'firebase/app';
-import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
+import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, sendEmailVerification, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink } from 'firebase/auth';
 import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 
 // Firebase configuration from environment variables
@@ -27,7 +27,11 @@ export {
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
     signOut,
-    onAuthStateChanged
+    onAuthStateChanged,
+    sendEmailVerification,
+    sendSignInLinkToEmail,
+    isSignInWithEmailLink,
+    signInWithEmailLink
 };
 
 // Firestore functions
@@ -81,6 +85,55 @@ export const getUserProfile = async (uid) => {
     } catch (error) {
         console.error('Error getting user profile:', error);
         return null;
+    }
+};
+
+// Phone to email mapping functions
+export const savePhoneEmailMapping = async (phone, email) => {
+    try {
+        const phoneRef = doc(db, 'users', phone);
+        await setDoc(phoneRef, {
+            email: email,
+            phone: phone,
+            createdAt: new Date()
+        });
+        return { success: true };
+    } catch (error) {
+        console.error('Error saving phone-email mapping:', error);
+        throw error;
+    }
+};
+
+export const getEmailByPhone = async (phone) => {
+    try {
+        const phoneRef = doc(db, 'users', phone);
+        const phoneSnap = await getDoc(phoneRef);
+
+        if (phoneSnap.exists()) {
+            return phoneSnap.data().email;
+        }
+        return null;
+    } catch (error) {
+        console.error('Error getting email by phone:', error);
+        return null;
+    }
+};
+
+export const checkEmailVerified = async (email) => {
+    try {
+        // Get user by email from Firebase Auth
+        // Note: This is a simplified approach. In production, you might want to store verification status in Firestore
+        const userQuery = query(collection(db, 'users'), where('email', '==', email));
+        const querySnapshot = await getDocs(userQuery);
+
+        if (!querySnapshot.empty) {
+            const userData = querySnapshot.docs[0].data();
+            return userData.emailVerified || false;
+        }
+        return false;
+    } catch (error) {
+        console.error('Error checking email verification:', error);
+        return false;
     }
 };
 
