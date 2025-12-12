@@ -9,6 +9,7 @@ const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS;
 function App() {
     const [account, setAccount] = useState(null);
     const [policies, setPolicies] = useState([]);
+    const [selectedPlan, setSelectedPlan] = useState(null);
     const [loading, setLoading] = useState(false);
 
     const [lat, setLat] = useState("");
@@ -16,7 +17,8 @@ function App() {
     const [locationQuery, setLocationQuery] = useState("");
     const [threshold, setThreshold] = useState("");
     const [duration, setDuration] = useState("30");
-    const [premium, setPremium] = useState("0.001");
+    const [premiumUSD, setPremiumUSD] = useState(""); // Managed in USD now
+    const [premiumETH, setPremiumETH] = useState(""); // Calculated
 
     // New Advanced State
     const [ethRates, setEthRates] = useState({});
@@ -82,11 +84,47 @@ function App() {
         try {
             const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/recommend-policy`, { lat: latitude, lon: longitude });
             setRecommendation(res.data);
+
+            // Auto-select "Standard" plan driven by recommendation
             setThreshold(res.data.suggestedThreshold);
-            setPremium(res.data.suggestedPremiumETH);
             setDuration(res.data.suggestedDuration);
+            setPremiumUSD(res.data.suggestedPremiumUSD);
+            updateEthPremium(res.data.suggestedPremiumUSD);
         } catch (e) { console.error("Rec error", e); }
     };
+
+    const updateEthPremium = (usdAmount) => {
+        if (ethRates.usd > 0) {
+            const ethVal = (usdAmount / ethRates.usd).toFixed(5);
+            setPremiumETH(ethVal);
+        }
+    };
+
+    // Recalculate if user changes USD manually
+    useEffect(() => {
+        if (premiumUSD && ethRates.usd) {
+            updateEthPremium(premiumUSD);
+        }
+    }, [premiumUSD, ethRates]);
+
+    const selectPlan = (planType) => {
+        setSelectedPlan(planType);
+        if (planType === 'BASIC') {
+            setThreshold("10");
+            setDuration("30");
+            setPremiumUSD("10"); // Static low
+        } else if (planType === 'PRO') {
+            setThreshold("30");
+            setDuration("30");
+            setPremiumUSD("20");
+        } else if (planType === 'RECOMMENDED' && recommendation) {
+            setThreshold(recommendation.suggestedThreshold);
+            setDuration(recommendation.suggestedDuration);
+            setPremiumUSD(recommendation.suggestedPremiumUSD);
+        }
+    };
+
+
 
     const connectWallet = async () => {
         if (window.ethereum) {
@@ -128,7 +166,7 @@ function App() {
             const thresholdScaled = Math.floor(Number(threshold) * 100);
             const start = Math.floor(Date.now() / 1000);
             const end = start + (Number(duration) * 24 * 60 * 60);
-            const value = ethers.parseEther(premium);
+            const value = ethers.parseEther(premiumETH);
 
             const tx = await contract.createPolicy(indexId, thresholdScaled, start, end, { value });
             await tx.wait();
@@ -141,7 +179,7 @@ function App() {
                 farmer: account,
                 indexId: indexIdStr,
                 threshold: thresholdScaled,
-                premium: value.toString(),
+                premium: value.toString(), // Storing wei value
                 startTimestamp: start,
                 endTimestamp: end,
                 txHash: tx.hash
@@ -157,7 +195,7 @@ function App() {
     return (
         <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
             <header className="header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-                <h1 style={{ fontSize: '2rem', color: '#2c3e50' }}>🌱 AgriChain Insurance</h1>
+                <h1 style={{ fontSize: '2rem', color: '#ffffffff' }}>AgriChain Insurance</h1>
                 {!account ? (
                     <button className="btn btn-primary" onClick={connectWallet}>Connect Wallet</button>
                 ) : (
@@ -181,62 +219,83 @@ function App() {
                         <button className="btn" onClick={handleLocationSearch} disabled={loadingRec}>🔍</button>
                     </div>
 
-                    <button className="btn" onClick={handleUseCurrentLocation} style={{ width: '100%', background: '#fff', color: '#2ecc71', border: '1px solid #2ecc71', marginTop: '10px' }}>
+                    <button className="btn" onClick={handleUseCurrentLocation} style={{ width: '100%', background: 'transparent', color: '#2ecc71', border: '1px solid #2ecc71', marginTop: '10px' }}>
                         📍 Use My Current Location
                     </button>
 
                     {loadingRec && <p style={{ marginTop: '10px', color: '#3498db' }}>Fetching location data...</p>}
 
                     {recommendation && (
-                        <div style={{ background: '#f0f9ff', padding: '15px', borderRadius: '10px', marginTop: '20px', borderLeft: '5px solid #3498db' }}>
-                            <h3 style={{ margin: '0 0 10px 0', color: '#2980b9' }}>🤖 AI Policy Recommendation</h3>
-                            <p><strong>Risk Level:</strong> {recommendation.riskLevel}</p>
-                            <p><strong>Reason:</strong> {recommendation.reason}</p>
-                            <p><strong>Avg Rainfall (60d):</strong> {recommendation.stats.avgRainfall}mm</p>
-                            <p><strong>Total Rainfall (60d):</strong> {recommendation.stats.totalRainfall}mm</p>
-                            <p><strong>Dry Days:</strong> {recommendation.stats.dryDays}</p>
-                            <button onClick={() => lat && lon && getRecommendation(lat, lon)} style={{ marginTop: '10px', background: '#3498db', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '5px' }}>🔄 Refresh</button>
+                        <div>
+                            <div style={{ background: 'rgba(52, 152, 219, 0.1)', padding: '15px', borderRadius: '10px', marginTop: '20px', marginBottom: '20px', borderLeft: '5px solid #3498db' }}>
+                                <h3 style={{ margin: '0 0 10px 0', color: '#63b3ed' }}>Analysis for {locationQuery || "Region"}</h3>
+                                <p><strong>Risk Level:</strong> {recommendation.riskLevel}</p>
+                                <p><strong>Reason:</strong> {recommendation.reason}</p>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px' }}>
+                                    <div style={{ background: 'var(--input-bg)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>🌧️ 60d Rain: <strong>{recommendation.stats.totalRainfall}mm</strong></div>
+                                    <div style={{ background: 'var(--input-bg)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>☀️ Dry Days: <strong>{recommendation.stats.dryDays}</strong></div>
+                                </div>
+                            </div>
+
+                            <h4 style={{ marginBottom: '10px' }}>Select a Plan:</h4>
+                            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+                                <div
+                                    onClick={() => selectPlan('BASIC')}
+                                    style={{ border: selectedPlan === 'BASIC' ? '2px solid var(--primary)' : '1px solid var(--border-color)', background: selectedPlan === 'BASIC' ? 'var(--primary-glow)' : 'transparent', padding: '10px', borderRadius: '8px', cursor: 'pointer', flex: 1, textAlign: 'center' }}
+                                >
+                                    <strong>Basic</strong><br />$10<br /><small style={{ color: '#8b949e' }}>10mm / 30d</small>
+                                </div>
+                                <div
+                                    onClick={() => selectPlan('RECOMMENDED')}
+                                    style={{ border: selectedPlan === 'RECOMMENDED' ? '2px solid var(--accent-blue)' : '1px solid var(--border-color)', background: selectedPlan === 'RECOMMENDED' ? 'rgba(14, 165, 233, 0.2)' : 'transparent', padding: '10px', borderRadius: '8px', cursor: 'pointer', flex: 1, textAlign: 'center', position: 'relative' }}
+                                >
+                                    {selectedPlan === 'RECOMMENDED' && <span style={{ position: 'absolute', top: '-10px', right: '-5px', background: 'var(--accent-blue)', color: 'white', fontSize: '10px', padding: '2px 6px', borderRadius: '10px' }}>BEST</span>}
+                                    <strong>Smart</strong><br />${recommendation.suggestedPremiumUSD}<br /><small style={{ color: '#8b949e' }}>{recommendation.stats.avgRainfall > 5 ? 'Standard' : 'High Risk'}</small>
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>
 
                 <div className="card" style={{ opacity: lat ? 1 : 0.6, pointerEvents: lat ? 'all' : 'none' }}>
-                    <h2 style={{ marginBottom: '20px', borderBottom: '2px solid #f1f2f6', paddingBottom: '10px' }}>2. Customize Policy</h2>
+                    <h2 style={{ marginBottom: '20px', borderBottom: '2px solid #30363d', paddingBottom: '10px' }}>2. Customize & Pay</h2>
 
                     <div className="form-group">
                         <label>Coordinates</label>
                         <div style={{ display: 'flex', gap: '10px' }}>
-                            <input value={lat} readOnly placeholder="Lat" style={{ background: '#f8f9fa' }} />
-                            <input value={lon} readOnly placeholder="Lon" style={{ background: '#f8f9fa' }} />
+                            <input value={lat} readOnly placeholder="Lat" style={{ background: 'var(--input-bg)', color: 'var(--text-color)', border: '1px solid var(--border-color)' }} />
+                            <input value={lon} readOnly placeholder="Lon" style={{ background: 'var(--input-bg)', color: 'var(--text-color)', border: '1px solid var(--border-color)' }} />
                         </div>
                     </div>
 
                     <div className="form-group">
-                        <label>Rainfall Threshold (mm) {recommendation && <span style={{ color: '#27ae60' }}>(Auto-Filled)</span>}</label>
+                        <label>Rainfall Threshold (mm)</label>
                         <input value={threshold} onChange={e => setThreshold(e.target.value)} type="number" />
                     </div>
 
                     <div className="form-group">
                         <label>Duration (Days)</label>
-                        <select value={duration} onChange={e => setDuration(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd' }}>
-                            <option value="15">15 Days (Short Term)</option>
-                            <option value="30">30 Days (Standard)</option>
-                            <option value="60">60 Days (Season)</option>
+                        <select value={duration} onChange={e => setDuration(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--input-bg)', color: 'var(--text-color)' }}>
+                            <option value="15">15 Days</option>
+                            <option value="30">30 Days</option>
+                            <option value="60">60 Days</option>
                         </select>
                     </div>
 
                     <div className="form-group">
-                        <label>Premium (ETH)</label>
-                        <input value={premium} onChange={e => setPremium(e.target.value)} type="number" step="0.001" />
-                        {ethRates.usd && (
-                            <div style={{ fontSize: '0.9em', color: '#7f8c8d', marginTop: '5px' }}>
-                                ≈ ${(premium * ethRates.usd).toFixed(2)} USD | ₹{(premium * ethRates.inr).toFixed(2)} INR
-                            </div>
-                        )}
+                        <label>Premium ($ USD)</label>
+                        <input value={premiumUSD} onChange={e => setPremiumUSD(e.target.value)} type="number" />
                     </div>
 
-                    <button className="btn btn-primary" style={{ width: '100%', marginTop: '20px', fontSize: '1.1em', padding: '15px' }} onClick={buyPolicy} disabled={loading || !account}>
-                        {loading ? "Processing..." : `🛡️ Protect for ${premium} ETH ${ethRates.usd ? `($${(parseFloat(premium) * ethRates.usd).toFixed(2)} USD / ₹${(parseFloat(premium) * ethRates.inr).toFixed(2)} INR)` : ''} & Activate`}
+                    <div style={{ background: 'var(--input-bg)', padding: '15px', borderRadius: '8px', marginBottom: '15px', textAlign: 'center', border: '1px solid var(--border-color)' }}>
+                        <div style={{ fontSize: '1.5em', fontWeight: 'bold', color: 'var(--text-color)' }}>{premiumETH || "0.00000"} ETH</div>
+                        <div style={{ fontSize: '0.9em', color: 'var(--text-muted)' }}>
+                            Rate: 1 ETH = ${ethRates.usd}
+                        </div>
+                    </div>
+
+                    <button className="btn btn-primary" style={{ width: '100%', marginTop: '10px', fontSize: '1.2em', padding: '15px' }} onClick={buyPolicy} disabled={loading || !account || !premiumETH}>
+                        {loading ? "Processing..." : `Pay ${premiumETH} ETH`}
                     </button>
                 </div>
             </div>

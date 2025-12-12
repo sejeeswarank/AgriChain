@@ -71,7 +71,11 @@ app.get('/', (req, res) => res.send('AgriChain Backend Running'));
 
 app.get('/api/policies/:farmer', async (req, res) => {
     try {
-        const policies = await Policy.find({ farmer: req.params.farmer });
+        // Case-insensitive search for the farmer's address
+        const farmerAddress = req.params.farmer;
+        const policies = await Policy.find({
+            farmer: { $regex: new RegExp(`^${farmerAddress}$`, 'i') }
+        });
         res.json(policies);
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -203,21 +207,23 @@ app.post('/api/recommend-policy', async (req, res) => {
 
         if (avgRainfall < 2.0 || dryDays > 45) {
             riskLevel = "High";
-            suggestedThreshold = 10; // Trigger payout if VERY dry
-            suggestedPremiumETH = "0.005"; // Higher risk, higher premium
+            suggestedThreshold = 10;
+            suggestedPremiumUSD = 50; // $50 for high risk
             reason = "High drought risk! 60-day rainfall is critically low.";
         } else if (avgRainfall < 5.0) {
             riskLevel = "Medium";
             suggestedThreshold = 30;
-            suggestedPremiumETH = "0.002";
+            suggestedPremiumUSD = 20; // $20 for medium
             reason = "Moderate rainfall. Standard drought protection recommended.";
+        } else {
+            suggestedPremiumUSD = 10; // $10 for low risk
         }
 
         res.json({
             riskLevel,
             suggestedThreshold,
-            suggestedDuration: 30, // Default 30 days
-            suggestedPremiumETH,
+            suggestedDuration: 30,
+            suggestedPremiumUSD, // Sending USD now
             reason,
             stats: {
                 avgRainfall: avgRainfall.toFixed(2),

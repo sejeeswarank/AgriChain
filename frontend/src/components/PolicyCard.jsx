@@ -1,4 +1,5 @@
 import React from 'react';
+import { ethers } from 'ethers';
 
 const PolicyCard = ({ policy, index }) => {
     const start = new Date(Number(policy.startTimestamp) * 1000).toLocaleDateString();
@@ -15,7 +16,7 @@ const PolicyCard = ({ policy, index }) => {
             </div>
             <p><strong>Index ID:</strong> {policy.indexId ? policy.indexId.substring(0, 10) + '...' : 'N/A'}</p>
             <p><strong>Rainfall Threshold:</strong> {Number(policy.threshold) / 100} mm</p>
-            <p><strong>Premium:</strong> {premium} Wei</p>
+            <p><strong>Premium:</strong> {ethers.formatEther(policy.premium)} ETH</p>
             <p><strong>Period:</strong> {start} - {end}</p>
             {policy.paidOut && (
                 <div className="text-payout">
