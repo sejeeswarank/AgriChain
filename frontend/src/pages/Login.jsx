@@ -92,7 +92,8 @@ const Login = () => {
 
             // Send OTP to the email
             const response = await axios.post('/api/send-email-otp', {
-                email: targetEmail
+                email: targetEmail,
+                purpose: 'login'
             });
 
             if (response.data.success) {

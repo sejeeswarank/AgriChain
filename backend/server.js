@@ -449,13 +449,13 @@ async function sendEmailOTP(email, otp) {
 
             if (error) {
                 console.error('Resend error:', error);
-                console.log('Email failed, using console OTP (check above)');
+                throw new Error(`Failed to send email: ${error.message}`);
             } else {
                 console.log(`Real email sent to ${email} via Resend`);
             }
         } catch (error) {
             console.error('Email sending failed:', error.message);
-            console.log('Falling back to console OTP (check above)');
+            throw new Error('Failed to send verification email. Please try again.');
         }
     } else {
         console.log('Resend API not configured. Using console OTP only.');
@@ -466,7 +466,7 @@ async function sendEmailOTP(email, otp) {
 
 // Send Email OTP endpoint
 app.post('/api/send-email-otp', async (req, res) => {
-    const { email } = req.body;
+    const { email, purpose } = req.body;
 
     if (!email) {
         return res.status(400).json({ error: "Email address required" });
@@ -476,6 +476,15 @@ app.post('/api/send-email-otp', async (req, res) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
         return res.status(400).json({ error: "Invalid email format" });
+    }
+
+    // For login purpose, check if user exists in Firebase Auth
+    if (purpose === 'login') {
+        try {
+            await admin.auth().getUserByEmail(email.toLowerCase());
+        } catch (error) {
+            return res.status(404).json({ error: "No account found with this email address. Please sign up first." });
+        }
     }
 
     try {

@@ -93,7 +93,8 @@ const Signup = () => {
 
         try {
             const response = await axios.post('/api/send-email-otp', {
-                email: email.toLowerCase()
+                email: email.toLowerCase(),
+                purpose: 'signup'
             });
 
             if (response.data.success) {
