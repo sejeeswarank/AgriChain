@@ -46,7 +46,7 @@ export const en = {
     "auth.forgotPassword": "Forgot Password?",
     "auth.noAccount": "Don't have an account?",
     "auth.haveAccount": "Already have an account?",
-    "auth.signIn": "Sign In",
+    "auth.signIn": "Login",
     "auth.signUp": "Sign Up",
 
     // OTP
@@ -164,5 +164,64 @@ export const en = {
     "policy.threshold": "Rainfall Threshold",
     "policy.premium": "Premium",
     "policy.period": "Period",
-    "policy.payoutExecuted": "Payout Executed (5x)!"
+    "policy.payoutExecuted": "Payout Executed (5x)!",
+
+    // Login Page
+    "login.title": "Sign In",
+    "login.subtitle": "Welcome back! Sign in to access your dashboard.",
+    "login.emailTab": "Email",
+    "login.mobileTab": "Mobile",
+    "login.verifyUsing": "Verify using:",
+    "login.password": "Password",
+    "login.emailOtp": "Email OTP",
+    "login.sendOtp": "Send OTP",
+    "login.signIn": "Sign In",
+    "login.verifySignIn": "Verify & Sign In",
+    "login.otpSentTo": "OTP sent to:",
+    "login.enterOtp": "Enter OTP",
+    "login.back": "Back",
+    "login.resendOtp": "Resend OTP",
+    "login.noAccount": "Don't have an account?",
+    "login.signUp": "Sign Up",
+    "login.mobileNote": "OTP will be sent to your registered email",
+    "login.noAccountFound": "No account found with this mobile number. Please sign up first.",
+
+    // Signup Page
+    "signup.title": "Create Account",
+    "signup.subtitle": "Enter your details to get started",
+    "signup.fullName": "Full Name",
+    "signup.email": "Email Address",
+    "signup.mobile": "Mobile Number",
+    "signup.password": "Password",
+    "signup.confirmPassword": "Confirm Password",
+    "signup.verifyEmail": "Verify Email & Continue",
+    "signup.verifyOtp": "Verify & Create Account",
+    "signup.otpSentTo": "Enter the 6-digit OTP sent to",
+    "signup.resendOtp": "Resend OTP",
+    "signup.backToEdit": "Back to Edit Details",
+    "signup.haveAccount": "Already have an account?",
+    "signup.signIn": "Sign In",
+    "signup.step1": "Step 1",
+    "signup.step2": "Step 2",
+
+    // Wallet Page
+    "wallet.title": "Connect Wallet",
+    "wallet.subtitle": "Connect Your Wallet",
+    "wallet.whyConnect": "Why Connect Wallet?",
+    "wallet.reason1": "Purchase crop insurance policies",
+    "wallet.reason2": "Receive automatic payouts",
+    "wallet.reason3": "Track your policies on blockchain",
+    "wallet.connectMetamask": "Connect MetaMask",
+    "wallet.noMetamask": "Don't have MetaMask? Download here →",
+    "wallet.connected": "Wallet Connected!",
+    "wallet.redirecting": "Redirecting to login page...",
+    "wallet.secureConnection": "Secure Connection",
+
+    // Dashboard extras
+    "dashboard.connectWallet": "Connect Wallet",
+    "dashboard.walletStatus": "Wallet Status",
+    "dashboard.connected": "Connected",
+    "dashboard.notConnected": "Not Connected",
+    "dashboard.connectNow": "Connect Now",
+    "dashboard.skipForNow": "Skip for now"
 };

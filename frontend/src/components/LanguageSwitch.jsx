@@ -2,17 +2,37 @@ import React from 'react';
 import { useLanguage } from '../context/LanguageContext';
 
 const LanguageSwitch = () => {
-    const { currentLanguage, switchLanguage, t } = useLanguage();
+    const { currentLanguage, switchLanguage } = useLanguage();
 
     const toggleLanguage = () => {
-        const newLanguage = currentLanguage === 'ta' ? 'en' : 'ta';
+        const newLanguage = currentLanguage === 'en' ? 'ta' : 'en';
         switchLanguage(newLanguage);
     };
+
+    // Show current language, clicking switches to the other
+    const getCurrentLabel = () => {
+        if (currentLanguage === 'en') {
+            return { short: 'ENG', full: 'English' };
+        } else {
+            return { short: 'த', full: 'தமிழ்' };
+        }
+    };
+
+    const getNextLabel = () => {
+        if (currentLanguage === 'en') {
+            return 'தமிழ்';
+        } else {
+            return 'English';
+        }
+    };
+
+    const labels = getCurrentLabel();
 
     return (
         <button
             onClick={toggleLanguage}
             className="language-switch-btn"
+            title={`Switch to ${getNextLabel()}`}
             style={{
                 position: 'fixed',
                 top: '20px',
@@ -34,16 +54,27 @@ const LanguageSwitch = () => {
             }}
             onMouseEnter={(e) => {
                 e.target.style.background = 'rgba(30, 41, 59, 0.95)';
-                e.target.style.borderColor = '#64748b';
+                e.target.style.borderColor = '#10b981';
             }}
             onMouseLeave={(e) => {
                 e.target.style.background = 'rgba(15, 23, 42, 0.9)';
                 e.target.style.borderColor = '#475569';
             }}
         >
-            <span>{currentLanguage === 'ta' ? 'EN' : 'தமிழ்'}</span>
-            <span style={{ fontSize: '12px', opacity: 0.7 }}>
-                {currentLanguage === 'ta' ? 'English' : 'தமிழ்'}
+            <span style={{
+                background: '#10b981',
+                padding: '2px 8px',
+                borderRadius: '4px',
+                fontSize: '12px',
+                fontWeight: 'bold'
+            }}>
+                {labels.short}
+            </span>
+            <span style={{ fontSize: '13px' }}>
+                {labels.full}
+            </span>
+            <span style={{ fontSize: '10px', opacity: 0.6 }}>
+                → {getNextLabel()}
             </span>
         </button>
     );

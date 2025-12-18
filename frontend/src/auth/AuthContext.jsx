@@ -1,5 +1,13 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { auth, onAuthStateChanged, signOut, createUserProfile, isSignInWithEmailLink, signInWithEmailLink } from '../firebase';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import {
+    auth,
+    onAuthStateChanged,
+    signOut,
+    createUserProfile,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword
+} from '../firebase';
+import { inMemoryPersistence, setPersistence } from 'firebase/auth';
 
 const AuthContext = createContext();
 
@@ -11,50 +19,105 @@ export const useAuth = () => {
     return context;
 };
 
+// Inactivity timeout duration (10 minutes)
+const INACTIVITY_TIMEOUT = 10 * 60 * 1000;
+
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [userProfile, setUserProfile] = useState(null);
+    const [inactivityTimer, setInactivityTimer] = useState(null);
 
-    useEffect(() => {
-        // Handle email link sign-in
-        if (isSignInWithEmailLink(window.location.href)) {
-            let email = localStorage.getItem('emailForSignIn');
-            if (!email) {
-                // User opened the link on a different device. Ask for email
-                email = window.prompt('Please provide your email for confirmation');
-            }
+    // Logout function
+    const logout = useCallback(async () => {
+        try {
+            // Clear any stored session data
+            sessionStorage.clear();
+            await signOut(auth);
+            setUser(null);
+            setUserProfile(null);
+        } catch (error) {
+            console.error('Error signing out:', error);
+        }
+    }, []);
 
-            if (email) {
-                signInWithEmailLink(email, window.location.href)
-                    .then(() => {
-                        // Clear email from storage
-                        localStorage.removeItem('emailForSignIn');
-                        // Remove the sign-in link parameters from URL
-                        window.history.replaceState({}, document.title, window.location.pathname);
-                    })
-                    .catch((error) => {
-                        console.error('Error signing in with email link:', error);
-                    });
-            }
+    // Reset inactivity timer
+    const resetInactivityTimer = useCallback(() => {
+        if (inactivityTimer) {
+            clearTimeout(inactivityTimer);
         }
 
+        if (user) {
+            const newTimer = setTimeout(() => {
+                console.log('⏰ Session expired due to inactivity');
+                logout();
+            }, INACTIVITY_TIMEOUT);
+            setInactivityTimer(newTimer);
+        }
+    }, [user, inactivityTimer, logout]);
+
+    // Set up activity listeners
+    useEffect(() => {
+        if (user) {
+            const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+
+            const handleActivity = () => {
+                resetInactivityTimer();
+            };
+
+            events.forEach(event => {
+                document.addEventListener(event, handleActivity);
+            });
+
+            // Initial timer
+            resetInactivityTimer();
+
+            return () => {
+                events.forEach(event => {
+                    document.removeEventListener(event, handleActivity);
+                });
+                if (inactivityTimer) {
+                    clearTimeout(inactivityTimer);
+                }
+            };
+        }
+    }, [user]);
+
+    // Set in-memory persistence (logout on refresh)
+    useEffect(() => {
+        const setAuthPersistence = async () => {
+            try {
+                await setPersistence(auth, inMemoryPersistence);
+                console.log('🔒 Auth persistence set to in-memory (logout on refresh)');
+            } catch (error) {
+                console.error('Error setting auth persistence:', error);
+            }
+        };
+        setAuthPersistence();
+    }, []);
+
+    // Listen for auth state changes
+    useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
             if (firebaseUser) {
                 setUser(firebaseUser);
+
                 // Create/update user profile in Firestore
-                await createUserProfile(firebaseUser, {
-                    authMethod: firebaseUser.phoneNumber ? 'phone' : 'email',
-                    lastLogin: new Date()
-                });
-                // You can fetch additional profile data here if needed
+                try {
+                    await createUserProfile(firebaseUser, {
+                        authMethod: firebaseUser.phoneNumber ? 'phone' : 'email',
+                        lastLogin: new Date()
+                    });
+                } catch (error) {
+                    console.error('Error updating user profile:', error);
+                }
+
                 setUserProfile({
                     uid: firebaseUser.uid,
                     email: firebaseUser.email,
                     phoneNumber: firebaseUser.phoneNumber,
                     displayName: firebaseUser.displayName,
-                    emailVerified: firebaseUser.emailVerified,
-                    phoneNumberVerified: firebaseUser.phoneNumber ? true : false
+                    emailVerified: firebaseUser.emailVerified
                 });
             } else {
                 setUser(null);
@@ -66,11 +129,25 @@ export const AuthProvider = ({ children }) => {
         return () => unsubscribe();
     }, []);
 
-    const logout = async () => {
+    // Login with email and password
+    const loginWithEmailPassword = async (email, password) => {
         try {
-            await signOut(auth);
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            return { success: true, user: userCredential.user };
         } catch (error) {
-            console.error('Error signing out:', error);
+            console.error('Login error:', error);
+            return { success: false, error: error.message };
+        }
+    };
+
+    // Create user with email and password
+    const signupWithEmailPassword = async (email, password) => {
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            return { success: true, user: userCredential.user };
+        } catch (error) {
+            console.error('Signup error:', error);
+            return { success: false, error: error.message };
         }
     };
 
@@ -78,7 +155,9 @@ export const AuthProvider = ({ children }) => {
         user,
         userProfile,
         loading,
-        logout
+        logout,
+        loginWithEmailPassword,
+        signupWithEmailPassword
     };
 
     return (

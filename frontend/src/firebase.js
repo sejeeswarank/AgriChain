@@ -1,7 +1,7 @@
 // Firebase Configuration and Exports
 import { initializeApp } from 'firebase/app';
 import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, sendEmailVerification, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink } from 'firebase/auth';
-import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
 
 // Firebase configuration from environment variables
 const firebaseConfig = {
@@ -42,7 +42,8 @@ export {
     collection,
     query,
     where,
-    getDocs
+    getDocs,
+    updateDoc
 };
 
 // Helper functions
@@ -59,14 +60,15 @@ export const createUserProfile = async (user, additionalData = {}) => {
         try {
             await setDoc(userRef, {
                 uid: user.uid,
-                name: additionalData.name || '',
+                fullName: additionalData.fullName || '',
                 email: email || '',
-                phone: phoneNumber || '',
+                mobileNumber: phoneNumber || '',
                 createdAt,
                 ...additionalData
             });
         } catch (error) {
             console.error('Error creating user profile:', error);
+            throw error;
         }
     }
 
@@ -137,43 +139,6 @@ export const checkEmailVerified = async (email) => {
     }
 };
 
-// OTP verification functions
-export const sendEmailOTP = async (email) => {
-    // In a real implementation, this would call your backend API
-    // For demo purposes, we'll simulate sending OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    console.log(`Email OTP for ${email}: ${otp}`);
-
-    // Store OTP temporarily (in production, use secure backend)
-    sessionStorage.setItem(`email_otp_${email}`, otp);
-    sessionStorage.setItem(`email_otp_time_${email}`, Date.now().toString());
-
-    return { success: true, message: 'OTP sent to email' };
-};
-
-export const verifyEmailOTP = async (email, otp) => {
-    const storedOTP = sessionStorage.getItem(`email_otp_${email}`);
-    const otpTime = sessionStorage.getItem(`email_otp_time_${email}`);
-
-    if (!storedOTP || !otpTime) {
-        throw new Error('OTP expired or not found');
-    }
-
-    // Check if OTP is expired (5 minutes)
-    if (Date.now() - parseInt(otpTime) > 5 * 60 * 1000) {
-        throw new Error('OTP expired');
-    }
-
-    if (storedOTP !== otp) {
-        throw new Error('Invalid OTP');
-    }
-
-    // Clear OTP after successful verification
-    sessionStorage.removeItem(`email_otp_${email}`);
-    sessionStorage.removeItem(`email_otp_time_${email}`);
-
-    return { success: true, message: 'Email verified successfully' };
-};
 
 export const sendMobileOTP = async (mobile) => {
     // In a real implementation, this would call your backend API

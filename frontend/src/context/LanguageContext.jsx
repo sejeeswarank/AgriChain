@@ -34,9 +34,39 @@ export const LanguageProvider = ({ children }) => {
         localStorage.setItem('agriChain-language', currentLanguage);
     }, [currentLanguage]);
 
+    // Translation function - supports dot notation keys like "auth.tagline"
     const t = (key) => {
-        const translation = translations[currentLanguage]?.[key];
-        return translation || key; // Fallback to key if translation not found
+        const currentTranslations = translations[currentLanguage];
+
+        // First try direct key lookup (for dot notation strings as keys)
+        if (currentTranslations && currentTranslations[key]) {
+            return currentTranslations[key];
+        }
+
+        // Fallback: try nested object lookup
+        if (currentTranslations) {
+            const keys = key.split('.');
+            let result = currentTranslations;
+            for (const k of keys) {
+                if (result && typeof result === 'object' && k in result) {
+                    result = result[k];
+                } else {
+                    result = undefined;
+                    break;
+                }
+            }
+            if (result && typeof result === 'string') {
+                return result;
+            }
+        }
+
+        // Final fallback: try English
+        if (currentLanguage !== 'en' && translations.en && translations.en[key]) {
+            return translations.en[key];
+        }
+
+        // Return key as fallback (for debugging missing translations)
+        return key;
     };
 
     const switchLanguage = (language) => {

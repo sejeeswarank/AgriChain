@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { verifyEmailOTP, signInWithCustomToken, sendEmailOTP } from '../firebase';
 
 const OtpVerify = () => {
     const [otp, setOtp] = useState('');
@@ -11,12 +12,11 @@ const OtpVerify = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Get confirmation result from location state
-    const confirmationResult = location.state?.confirmationResult;
-    const phoneNumber = location.state?.phoneNumber;
+    // Get email from location state
+    const email = location.state?.email;
 
     useEffect(() => {
-        if (!confirmationResult || !phoneNumber) {
+        if (!email) {
             navigate('/login');
             return;
         }
@@ -34,7 +34,7 @@ const OtpVerify = () => {
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [confirmationResult, phoneNumber, navigate]);
+    }, [email, navigate]);
 
     const handleVerifyOTP = async (e) => {
         e.preventDefault();
@@ -42,23 +42,13 @@ const OtpVerify = () => {
         setError('');
 
         try {
-            await confirmationResult.confirm(otp);
+            const result = await verifyEmailOTP(email, otp);
+            // Sign in with custom token
+            await signInWithCustomToken(result.customToken);
             navigate('/dashboard');
         } catch (error) {
             console.error('OTP verification error:', error);
-            switch (error.code) {
-                case 'auth/invalid-verification-code':
-                    setError('Invalid OTP. Please check and try again.');
-                    break;
-                case 'auth/code-expired':
-                    setError('OTP has expired. Please request a new one.');
-                    break;
-                case 'auth/invalid-verification-id':
-                    setError('Invalid verification. Please try again.');
-                    break;
-                default:
-                    setError('OTP verification failed. Please try again.');
-            }
+            setError(error.message || 'OTP verification failed. Please try again.');
         }
         setLoading(false);
     };
@@ -70,8 +60,7 @@ const OtpVerify = () => {
         setCountdown(30);
 
         try {
-            // This would typically trigger a new OTP send
-            // For now, we'll just reset the timer
+            await sendEmailOTP(email);
             setTimeout(() => {
                 setResendDisabled(false);
             }, 30000);
@@ -83,89 +72,85 @@ const OtpVerify = () => {
         setLoading(false);
     };
 
-    const handleChangeNumber = () => {
+    const handleChangeEmail = () => {
         navigate('/login');
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-            <div className="sm:mx-auto sm:w-full sm:max-w-md">
-                <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                    Verify your phone number
-                </h2>
-                <p className="mt-2 text-center text-sm text-gray-600">
-                    We've sent a 6-digit code to {phoneNumber}
-                </p>
-            </div>
+        <div className="login-container">
+            <div className="login-content">
+                <div className="logo-section">
+                    <h1 className="logo-title">AgriChain <span className="logo-subtitle">Insurance</span></h1>
+                    <p className="tagline">Secure Farming Solutions</p>
+                </div>
 
-            <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-                    <form onSubmit={handleVerifyOTP} className="space-y-6">
-                        <div>
-                            <label htmlFor="otp" className="block text-sm font-medium text-gray-700 text-center">
-                                Enter verification code
-                            </label>
-                            <div className="mt-1">
-                                <input
-                                    id="otp"
-                                    name="otp"
-                                    type="text"
-                                    required
-                                    value={otp}
-                                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-center text-lg tracking-widest"
-                                    placeholder="000000"
-                                    maxLength="6"
-                                />
-                            </div>
+                <div className="login-card">
+                    <h2>Verify your email</h2>
+                    <p>We've sent a 6-digit code to {email}</p>
+
+                    <form onSubmit={handleVerifyOTP}>
+                        <div className="input-group">
+                            <label>Enter verification code</label>
+                            <input
+                                type="text"
+                                value={otp}
+                                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                placeholder="000000"
+                                maxLength="6"
+                                required
+                                style={{ textAlign: 'center', fontSize: '1.2rem', letterSpacing: '0.5rem' }}
+                            />
                         </div>
 
-                        <div>
-                            <button
-                                type="submit"
-                                disabled={loading || otp.length !== 6}
-                                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {loading ? 'Verifying...' : 'Verify OTP'}
-                            </button>
-                        </div>
+                        <button className="primary-btn" type="submit" disabled={loading || otp.length !== 6}>
+                            {loading ? <span className="spinner"></span> : 'Verify OTP'}
+                        </button>
                     </form>
 
-                    <div className="mt-6">
-                        <div className="relative">
-                            <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-gray-300" />
-                            </div>
-                            <div className="relative flex justify-center text-sm">
-                                <span className="px-2 bg-white text-gray-500">Didn't receive the code?</span>
-                            </div>
-                        </div>
+                    <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                        <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Didn't receive the code?</p>
+                        <button
+                            onClick={handleResendOTP}
+                            disabled={resendDisabled || loading}
+                            style={{
+                                background: resendDisabled ? '#475569' : '#10b981',
+                                color: 'white',
+                                border: 'none',
+                                padding: '8px 16px',
+                                borderRadius: '8px',
+                                cursor: resendDisabled ? 'not-allowed' : 'pointer',
+                                marginTop: '10px',
+                                fontSize: '0.9rem'
+                            }}
+                        >
+                            {resendDisabled ? `Resend OTP in ${countdown}s` : 'Resend OTP'}
+                        </button>
 
-                        <div className="mt-6 space-y-3">
-                            <button
-                                onClick={handleResendOTP}
-                                disabled={resendDisabled || loading}
-                                className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {resendDisabled ? `Resend OTP in ${countdown}s` : 'Resend OTP'}
-                            </button>
-
-                            <button
-                                onClick={handleChangeNumber}
-                                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                            >
-                                Change phone number
-                            </button>
-                        </div>
+                        <button
+                            onClick={handleChangeEmail}
+                            style={{
+                                background: 'transparent',
+                                border: '1px solid #475569',
+                                color: '#94a3b8',
+                                padding: '8px 16px',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                marginTop: '10px',
+                                fontSize: '0.9rem'
+                            }}
+                        >
+                            Change email
+                        </button>
                     </div>
 
-                    {/* Error Display */}
-                    {error && (
-                        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                            <p className="text-sm text-red-600">{error}</p>
-                        </div>
-                    )}
+                    {error && <div className="error-message">{error}</div>}
                 </div>
+            </div>
+
+            <div className="animated-bg">
+                <div className="circle c1"></div>
+                <div className="circle c2"></div>
+                <div className="circle c3"></div>
             </div>
         </div>
     );

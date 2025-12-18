@@ -24,6 +24,7 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/agrichain')
 const provider = new ethers.JsonRpcProvider(RPC_URL);
 let contract;
 
+
 if (CONTRACT_ADDRESS) {
     try {
         contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
@@ -386,6 +387,198 @@ app.post('/api/verify-mobile', async (req, res) => {
 
     } catch (error) {
         console.error("Verify Mobile Error:", error);
+        res.status(500).json({ error: "Verification failed" });
+    }
+});
+
+
+// ==========================================
+// EMAIL OTP VERIFICATION ENDPOINTS
+// ==========================================
+
+// In-memory storage for Email OTPs
+const emailOtpStore = new Map(); // email -> { hashedOTP, salt, expiry, attempts }
+
+// Initialize Resend for email sending
+const { Resend } = require('resend');
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+
+// Send Email OTP using Resend API
+async function sendEmailOTP(email, otp) {
+    // Always log to console for debugging
+    console.log(`\n📧 ==========================================`);
+    console.log(`📧 EMAIL OTP SENT TO: ${email}`);
+    console.log(`📧 YOUR OTP CODE IS: ${otp}`);
+    console.log(`📧 OTP expires in 5 minutes`);
+    console.log(`📧 ==========================================\n`);
+
+    // If Resend API key is configured, send real email
+    if (resend && process.env.RESEND_API_KEY) {
+        try {
+            const { data, error } = await resend.emails.send({
+                from: 'AgriChain <onboarding@resend.dev>',
+                to: [email],
+                subject: 'Your AgriChain Verification Code',
+                html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                        <div style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0;">
+                            <h1 style="margin: 0;">🌾 AgriChain Insurance</h1>
+                        </div>
+                        <div style="background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px;">
+                            <h2 style="color: #1e293b;">Verification Code</h2>
+                            <p style="color: #64748b;">Your one-time verification code is:</p>
+                            <div style="background: #1e293b; color: #10b981; font-size: 32px; font-weight: bold; text-align: center; padding: 20px; border-radius: 8px; letter-spacing: 8px; margin: 20px 0;">
+                                ${otp}
+                            </div>
+                            <p style="color: #64748b;">This code expires in <strong>5 minutes</strong>.</p>
+                            <p style="color: #94a3b8; font-size: 12px; margin-top: 30px;">If you didn't request this code, please ignore this email.</p>
+                        </div>
+                    </div>
+                `
+            });
+
+            if (error) {
+                console.error('Resend error:', error);
+                console.log('Email failed, using console OTP (check above)');
+            } else {
+                console.log(`Real email sent to ${email} via Resend`);
+            }
+        } catch (error) {
+            console.error('Email sending failed:', error.message);
+            console.log('Falling back to console OTP (check above)');
+        }
+    } else {
+        console.log('Resend API not configured. Using console OTP only.');
+    }
+
+    return true;
+}
+
+// Send Email OTP endpoint
+app.post('/api/send-email-otp', async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ error: "Email address required" });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: "Invalid email format" });
+    }
+
+    try {
+        // Verify email with Kickbox (if configured)
+        if (process.env.KICKBOX_API_KEY) {
+            try {
+                const kickboxResponse = await axios.get(
+                    `https://api.kickbox.com/v2/verify?email=${encodeURIComponent(email)}&apikey=${process.env.KICKBOX_API_KEY}`
+                );
+
+                const { result, reason } = kickboxResponse.data;
+                console.log(`Kickbox verification for ${email}: ${result} (${reason})`);
+
+                // Reject undeliverable or risky emails
+                if (result === 'undeliverable') {
+                    return res.status(400).json({
+                        error: "This email address appears to be invalid or undeliverable. Please use a valid email.",
+                        kickboxResult: result
+                    });
+                }
+
+                if (result === 'risky' && reason === 'disposable') {
+                    return res.status(400).json({
+                        error: "Disposable email addresses are not allowed. Please use a permanent email.",
+                        kickboxResult: result
+                    });
+                }
+            } catch (kickboxError) {
+                console.error('Kickbox verification error:', kickboxError.message);
+                // Continue anyway if Kickbox fails (don't block user)
+            }
+        }
+
+        // Generate OTP
+        const otp = generateOTP();
+        const salt = require('crypto').randomBytes(16).toString('hex');
+        const hashedOTP = hashOTP(otp, salt);
+
+        // Store OTP (expires in 5 minutes)
+        const expiry = Date.now() + (5 * 60 * 1000);
+        emailOtpStore.set(email.toLowerCase(), {
+            hashedOTP,
+            salt,
+            expiry,
+            attempts: 0
+        });
+
+        // Send Email OTP
+        await sendEmailOTP(email, otp);
+
+        console.log(`Email OTP sent to ${email}`);
+
+        res.json({
+            success: true,
+            message: "OTP sent successfully to your email address",
+            expiresIn: 300 // 5 minutes
+        });
+
+    } catch (error) {
+        console.error("Send Email OTP Error:", error);
+        res.status(500).json({ error: "Failed to send OTP" });
+    }
+});
+
+// Verify Email OTP endpoint
+app.post('/api/verify-email-otp', async (req, res) => {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+        return res.status(400).json({ error: "Email and OTP required" });
+    }
+
+    const normalizedEmail = email.toLowerCase();
+
+    // Check if OTP exists for this email
+    const otpData = emailOtpStore.get(normalizedEmail);
+    if (!otpData) {
+        return res.status(400).json({ error: "No OTP found. Please request a new OTP." });
+    }
+
+    // Check expiry
+    if (Date.now() > otpData.expiry) {
+        emailOtpStore.delete(normalizedEmail);
+        return res.status(400).json({ error: "OTP expired. Please request a new OTP." });
+    }
+
+    // Check attempts (max 3)
+    if (otpData.attempts >= 3) {
+        emailOtpStore.delete(normalizedEmail);
+        return res.status(400).json({ error: "Too many failed attempts. Please request a new OTP." });
+    }
+
+    // Verify OTP
+    const hashedInputOTP = hashOTP(otp, otpData.salt);
+    if (hashedInputOTP !== otpData.hashedOTP) {
+        otpData.attempts++;
+        return res.status(400).json({ error: "Invalid OTP. Please try again." });
+    }
+
+    try {
+        // OTP verified successfully
+        emailOtpStore.delete(normalizedEmail); // Clean up
+
+        console.log(`Email OTP verification successful for: ${email}`);
+
+        res.json({
+            success: true,
+            message: "Email verified successfully!",
+            email: normalizedEmail
+        });
+
+    } catch (error) {
+        console.error("Verify Email OTP Error:", error);
         res.status(500).json({ error: "Verification failed" });
     }
 });
