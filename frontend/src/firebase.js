@@ -61,6 +61,12 @@ export const verifyEmailOTP = async (email, otp) => {
     }
     return response.json();
 };
+import { signInWithCustomToken as firebaseSignInWithCustomToken } from 'firebase/auth';
+// ...existing code...
+// Sign in with Firebase custom token
+export const signInWithCustomToken = async (customToken) => {
+    return firebaseSignInWithCustomToken(auth, customToken);
+};
 // Helper functions
 export const createUserProfile = async (user, additionalData = {}) => {
     if (!user) return;
