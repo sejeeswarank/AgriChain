@@ -1,4 +1,7 @@
-require('dotenv').config({ path: '../keys/.env' });
+// Load env only in development (Vercel uses its own env vars)
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config({ path: require('path').join(__dirname, '../keys/.env') });
+}
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -12,7 +15,15 @@ const RPC_URL = process.env.RPC_URL || "http://127.0.0.1:8545";
 
 const app = express();
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:5174', 'http://127.0.0.1:5173', 'http://127.0.0.1:5174'],
+    origin: [
+        'http://localhost:5173',
+        'http://localhost:5174',
+        'http://127.0.0.1:5173',
+        'http://127.0.0.1:5174',
+        'https://agrichain.tech',
+        'https://www.agrichain.tech',
+        'https://agrichain-mu.vercel.app'
+    ],
     credentials: true
 }));
 app.use(express.json());
