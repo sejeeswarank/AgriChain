@@ -427,7 +427,7 @@ async function sendEmailOTP(email, otp) {
     if (resend && process.env.RESEND_API_KEY) {
         try {
             const { data, error } = await resend.emails.send({
-                from: 'AgriChain <onboarding@resend.dev>',
+                from: 'AgriChain <noreply@agrichain.tech>',
                 to: [email],
                 subject: 'Your AgriChain Verification Code',
                 html: `
