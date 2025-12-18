@@ -46,6 +46,21 @@ export {
     updateDoc
 };
 
+// Verify Email OTP (calls backend API)
+export const verifyEmailOTP = async (email, otp) => {
+    const response = await fetch('/api/verify-otp', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, otp }),
+    });
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Request failed with status code ${response.status}`);
+    }
+    return response.json();
+};
 // Helper functions
 export const createUserProfile = async (user, additionalData = {}) => {
     if (!user) return;
