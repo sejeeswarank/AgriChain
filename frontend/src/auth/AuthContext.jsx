@@ -120,8 +120,27 @@ export const AuthProvider = ({ children }) => {
                     emailVerified: firebaseUser.emailVerified
                 });
             } else {
-                setUser(null);
-                setUserProfile(null);
+                // Check for OTP-verified session (for email OTP login)
+                const otpVerifiedEmail = sessionStorage.getItem('otpVerifiedEmail');
+                if (otpVerifiedEmail) {
+                    // Create a pseudo-user object for OTP-authenticated users
+                    const otpUser = {
+                        email: otpVerifiedEmail,
+                        uid: 'otp-' + otpVerifiedEmail,
+                        emailVerified: true,
+                        isOtpUser: true
+                    };
+                    setUser(otpUser);
+                    setUserProfile({
+                        uid: otpUser.uid,
+                        email: otpVerifiedEmail,
+                        fullName: otpVerifiedEmail.split('@')[0],
+                        authMethod: 'email-otp'
+                    });
+                } else {
+                    setUser(null);
+                    setUserProfile(null);
+                }
             }
             setLoading(false);
         });
