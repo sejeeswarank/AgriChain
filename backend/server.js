@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const { ethers } = require('ethers');
 const axios = require('axios');
-const { Policy, OracleReport, Payout } = require('./models');
+const { Policy, OracleReport, Payout, EmailOTP } = require('./models');
 
 const CONTRACT_ABI = require('./abis/AgriChainPolicy.json');
 const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
@@ -407,8 +407,7 @@ app.post('/api/verify-mobile', async (req, res) => {
 // EMAIL OTP VERIFICATION ENDPOINTS
 // ==========================================
 
-// In-memory storage for Email OTPs
-const emailOtpStore = new Map(); // email -> { hashedOTP, salt, expiry, attempts }
+// Using MongoDB for Email OTP storage (required for Vercel serverless)
 
 // Initialize Resend for email sending
 const { Resend } = require('resend');
@@ -515,14 +514,12 @@ app.post('/api/send-email-otp', async (req, res) => {
         const salt = require('crypto').randomBytes(16).toString('hex');
         const hashedOTP = hashOTP(otp, salt);
 
-        // Store OTP (expires in 5 minutes)
-        const expiry = Date.now() + (5 * 60 * 1000);
-        emailOtpStore.set(email.toLowerCase(), {
-            hashedOTP,
-            salt,
-            expiry,
-            attempts: 0
-        });
+        // Store OTP in MongoDB (TTL index handles expiry)
+        await EmailOTP.findOneAndUpdate(
+            { email: email.toLowerCase() },
+            { hashedOTP, salt, attempts: 0, createdAt: new Date() },
+            { upsert: true, new: true }
+        );
 
         // Send Email OTP
         await sendEmailOTP(email, otp);
@@ -552,33 +549,27 @@ app.post('/api/verify-email-otp', async (req, res) => {
     const normalizedEmail = email.toLowerCase();
 
     // Check if OTP exists for this email
-    const otpData = emailOtpStore.get(normalizedEmail);
+    const otpData = await EmailOTP.findOne({ email: normalizedEmail });
     if (!otpData) {
         return res.status(400).json({ error: "No OTP found. Please request a new OTP." });
     }
 
-    // Check expiry
-    if (Date.now() > otpData.expiry) {
-        emailOtpStore.delete(normalizedEmail);
-        return res.status(400).json({ error: "OTP expired. Please request a new OTP." });
-    }
-
     // Check attempts (max 3)
     if (otpData.attempts >= 3) {
-        emailOtpStore.delete(normalizedEmail);
+        await EmailOTP.deleteOne({ email: normalizedEmail });
         return res.status(400).json({ error: "Too many failed attempts. Please request a new OTP." });
     }
 
     // Verify OTP
     const hashedInputOTP = hashOTP(otp, otpData.salt);
     if (hashedInputOTP !== otpData.hashedOTP) {
-        otpData.attempts++;
+        await EmailOTP.updateOne({ email: normalizedEmail }, { $inc: { attempts: 1 } });
         return res.status(400).json({ error: "Invalid OTP. Please try again." });
     }
 
     try {
         // OTP verified successfully
-        emailOtpStore.delete(normalizedEmail); // Clean up
+        await EmailOTP.deleteOne({ email: normalizedEmail }); // Clean up
 
         console.log(`Email OTP verification successful for: ${email}`);
 
