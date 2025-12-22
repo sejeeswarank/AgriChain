@@ -1,4 +1,5 @@
 import React from 'react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
@@ -31,29 +32,32 @@ const ProtectedRoute = ({ children }) => {
 
 function App() {
     return (
-        <LanguageProvider>
-            <AuthProvider>
-                <WalletProvider>
-                    <Router>
-                        <LanguageSwitch />
-                        <Routes>
-                            <Route path="/" element={<Login />} />
-                            <Route path="/signup" element={<Signup />} />
-                            <Route path="/wallet-connect" element={<WalletConnectPage />} />
-                            <Route
-                                path="/dashboard"
-                                element={
-                                    <ProtectedRoute>
-                                        <Dashboard />
-                                    </ProtectedRoute>
-                                }
-                            />
-                            <Route path="*" element={<Navigate to="/" />} />
-                        </Routes>
-                    </Router>
-                </WalletProvider>
-            </AuthProvider>
-        </LanguageProvider>
+        <>
+            <LanguageProvider>
+                <AuthProvider>
+                    <WalletProvider>
+                        <Router>
+                            <LanguageSwitch />
+                            <Routes>
+                                <Route path="/" element={<Login />} />
+                                <Route path="/signup" element={<Signup />} />
+                                <Route path="/wallet-connect" element={<WalletConnectPage />} />
+                                <Route
+                                    path="/dashboard"
+                                    element={
+                                        <ProtectedRoute>
+                                            <Dashboard />
+                                        </ProtectedRoute>
+                                    }
+                                />
+                                <Route path="*" element={<Navigate to="/" />} />
+                            </Routes>
+                        </Router>
+                    </WalletProvider>
+                </AuthProvider>
+            </LanguageProvider>
+            <SpeedInsights />
+        </>
     );
 }
 

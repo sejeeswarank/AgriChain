@@ -1,0 +1,7 @@
+ignoredBuiltDependencies:
+  - keccak
+  - protobufjs
+  - secp256k1
+
+onlyBuiltDependencies:
+  - '@firebase/util'
