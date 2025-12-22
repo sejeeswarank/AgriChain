@@ -1,16 +1,16 @@
 {
-    "version": 2,
-    "buildCommand": "cd frontend && npm install && npm run build",
-    "outputDirectory": "frontend/dist",
-    "functions": {
-        "backend/api/index.js": {
-            "runtime": "vercel-node@4.0.0"
-        }
-    },
-    "rewrites": [
-        {
-            "source": "/api/:path*",
-            "destination": "/backend/api/index.js"
-        }
-    ]
+  "version": 2,
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/dist",
+  "functions": {
+    "backend/api/index.js": {
+      "runtime": "nodejs20.x"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/backend/api/index.js"
+    }
+  ]
 }
