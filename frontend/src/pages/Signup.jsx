@@ -183,7 +183,7 @@ const Signup = () => {
         <div className="login-container">
             <div className="login-content">
                 <div className="logo-section">
-                    <h1 className="logo-title">AgriChain <span className="logo-subtitle">Insurance</span></h1>
+                    <img src="/src/assets/logo.png" alt="AgriChain Insurance" className="logo-image" />
                     <p className="tagline">{t('auth.tagline')}</p>
                 </div>
 

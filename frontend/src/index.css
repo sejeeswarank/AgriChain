@@ -162,6 +162,13 @@ h3 {
   background-clip: text;
 }
 
+.logo-image {
+  max-width: 200px;
+  height: auto;
+  margin: 0 auto;
+  display: block;
+}
+
 .logo-subtitle {
   color: #94a3b8;
   font-size: 0.9rem;
