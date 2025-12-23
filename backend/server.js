@@ -619,5 +619,11 @@ app.post('/api/verify-email-otp', async (req, res) => {
     }
 });
 
-// Note: No app.listen() for Vercel serverless; app is exported as handler
+const PORT = process.env.PORT || 5000;
+
+// Only start the server if this file is run directly (not imported)
+if (require.main === module) {
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
+
 module.exports = app;
