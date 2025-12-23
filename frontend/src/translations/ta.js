@@ -155,7 +155,6 @@ export const ta = {
     "auth.error.sendOtpFailed": "சரிபார்ப்புக் குறியீடுகளை அனுப்ப முடியவில்லை. மீண்டும் முயற்சிக்கவும்.",
     "auth.signInWithPhone": "அதற்கு பதிலாக தொலைபேசி எண்ணுடன் உள்நுழையவும்",
 
-    // PolicyCard
     "policy.header": "காப்பீடு #",
     "policy.status.paidOut": "வழங்கப்பட்டது",
     "policy.status.active": "செயலில்",
@@ -166,7 +165,6 @@ export const ta = {
     "policy.period": "காலம்",
     "policy.payoutExecuted": "பணம் வழங்கப்பட்டது (5x)!",
 
-    // Login Page
     "login.title": "உள்நுழை",
     "login.subtitle": "மீண்டும் வரவேற்கிறோம்! உங்கள் டாஷ்போர்டை அணுக உள்நுழையுங்கள்.",
     "login.emailTab": "மின்னஞ்சல்",
@@ -186,7 +184,6 @@ export const ta = {
     "login.mobileNote": "OTP உங்கள் பதிவு செய்த மின்னஞ்சலுக்கு அனுப்பப்படும்",
     "login.noAccountFound": "இந்த மொபைல் எண்ணுடன் கணக்கு இல்லை. முதலில் பதிவு செய்யவும்.",
 
-    // Signup Page
     "signup.title": "கணக்கை உருவாக்கு",
     "signup.subtitle": "தொடங்க உங்கள் விவரங்களை உள்ளிடவும்",
     "signup.fullName": "முழு பெயர்",
