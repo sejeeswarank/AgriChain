@@ -4,12 +4,12 @@
   "outputDirectory": "frontend/dist",
   "functions": {
     "backend/api/index.js": {
-      "runtime": "nodejs20.x"
+      "runtime": "nodejs18.x"
     }
   },
   "rewrites": [
     {
-      "source": "/api/:path*",
+      "source": "/api/(.*)",
       "destination": "/backend/api/index.js"
     }
   ]

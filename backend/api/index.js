@@ -1,2 +1,3 @@
-const app = require('../server');
-module.exports = app;
+export default function handler(req, res) {
+    res.status(200).json({ message: "API working" });
+}
