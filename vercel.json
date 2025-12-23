@@ -2,5 +2,10 @@
   "version": 2,
   "installCommand": "pnpm install",
   "buildCommand": "pnpm --filter agrichain-frontend build",
-  "outputDirectory": "frontend/dist"
+  "outputDirectory": "frontend/dist",
+  "functions": {
+    "api/**/*.js": {
+      "runtime": "nodejs18.x"
+    }
+  }
 }
