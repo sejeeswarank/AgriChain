@@ -1,3 +1,16 @@
+const admin = require('firebase-admin');
+
+// Initialize Firebase Admin (Vercel env vars)
+if (!admin.apps.length) {
+    admin.initializeApp({
+        credential: admin.credential.cert({
+            projectId: process.env.FIREBASE_PROJECT_ID,
+            privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+            clientEmail: process.env.FIREBASE_CLIENT_EMAIL
+        })
+    });
+}
+
 // Load env only in development (Vercel uses its own env vars)
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config({ path: require('path').join(__dirname, '../keys/.env') });
@@ -7,11 +20,25 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const { ethers } = require('ethers');
 const axios = require('axios');
-const { Policy, OracleReport, Payout, EmailOTP } = require('./models');
+const { Policy, OracleReport, Payout, EmailOTP, MobileOTP } = require('./models');
 
 const CONTRACT_ABI = require('./abis/AgriChainPolicy.json');
 const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
 const RPC_URL = process.env.RPC_URL || "http://127.0.0.1:8545";
+
+// MongoDB connection function for serverless (per-request)
+async function connectDB() {
+    if (mongoose.connection.readyState === 1) {
+        return;
+    }
+    try {
+        await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/agrichain');
+        console.log('MongoDB Connected');
+    } catch (err) {
+        console.error('MongoDB Error:', err);
+        throw err;
+    }
+}
 
 const app = express();
 app.use(cors({
@@ -22,19 +49,18 @@ app.use(cors({
         'http://127.0.0.1:5174',
         'https://agrichain.tech',
         'https://www.agrichain.tech',
-        'https://agrichain-mu.vercel.app'
+        'https://agrichain-mu.vercel.app',
+        'https://*.vercel.app' // Allow Vercel preview/production domains
     ],
     credentials: true
 }));
 app.use(express.json());
 
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/agrichain')
-    .then(() => console.log('MongoDB Connected'))
-    .catch(err => console.error('MongoDB Error:', err));
-
+// Note: Ethers event listeners disabled for Vercel serverless (stateless; run separately for production events)
+// Uncomment for local/dev with persistent server
+/*
 const provider = new ethers.JsonRpcProvider(RPC_URL);
 let contract;
-
 
 if (CONTRACT_ADDRESS) {
     try {
@@ -44,6 +70,7 @@ if (CONTRACT_ADDRESS) {
         contract.on("PolicyCreated", async (policyId, farmer, indexId, threshold, premium, event) => {
             console.log(`New Policy: ${policyId}`);
             try {
+                await connectDB();
                 await Policy.create({
                     policyId: Number(policyId),
                     farmer: farmer,
@@ -58,6 +85,7 @@ if (CONTRACT_ADDRESS) {
         contract.on("PayoutExecuted", async (policyId, farmer, amount, event) => {
             console.log(`Payout: ${policyId}`);
             try {
+                await connectDB();
                 await Payout.create({
                     policyId: Number(policyId),
                     farmer: farmer,
@@ -70,6 +98,7 @@ if (CONTRACT_ADDRESS) {
 
         contract.on("OracleReportReceived", async (indexId, rainfall, timestamp, event) => {
             try {
+                await connectDB();
                 await OracleReport.create({
                     indexId: indexId,
                     rainfall: Number(rainfall),
@@ -84,6 +113,7 @@ if (CONTRACT_ADDRESS) {
 } else {
     console.log("CONTRACT_ADDRESS not set, event listener disabled.");
 }
+*/
 
 app.get('/', (req, res) => res.send('AgriChain Backend Running'));
 
@@ -258,8 +288,7 @@ app.post('/api/recommend-policy', async (req, res) => {
 
 // Mobile OTP Verification Endpoints
 
-// In-memory storage for OTPs (in production, use Redis or database)
-const otpStore = new Map(); // phoneNumber -> { otp: hashedOtp, expiry: timestamp, attempts: count }
+// MongoDB storage for Mobile OTPs (serverless compatible)
 
 // Generate 6-digit OTP
 function generateOTP() {
@@ -286,6 +315,7 @@ async function sendSMS(phoneNumber, otp) {
 
 // Send OTP
 app.post('/api/send-otp', async (req, res) => {
+    await connectDB();
     const { phoneNumber } = req.body;
 
     if (!phoneNumber) {
@@ -304,14 +334,12 @@ app.post('/api/send-otp', async (req, res) => {
         const salt = require('crypto').randomBytes(16).toString('hex');
         const hashedOTP = hashOTP(otp, salt);
 
-        // Store OTP (expires in 5 minutes)
-        const expiry = Date.now() + (5 * 60 * 1000);
-        otpStore.set(phoneNumber, {
-            hashedOTP,
-            salt,
-            expiry,
-            attempts: 0
-        });
+        // Store OTP in MongoDB (TTL handles expiry)
+        await MobileOTP.findOneAndUpdate(
+            { phoneNumber },
+            { hashedOTP, salt, attempts: 0, createdAt: new Date() },
+            { upsert: true, new: true }
+        );
 
         // Send SMS
         await sendSMS(phoneNumber, otp);
@@ -332,6 +360,7 @@ app.post('/api/send-otp', async (req, res) => {
 
 // Verify OTP and Generate Mobile VC
 app.post('/api/verify-mobile', async (req, res) => {
+    await connectDB();
     const { phoneNumber, otp } = req.body;
 
     if (!phoneNumber || !otp) {
@@ -339,33 +368,27 @@ app.post('/api/verify-mobile', async (req, res) => {
     }
 
     // Check if OTP exists for this phone number
-    const otpData = otpStore.get(phoneNumber);
+    const otpData = await MobileOTP.findOne({ phoneNumber });
     if (!otpData) {
         return res.status(400).json({ error: "No OTP found. Please request a new OTP." });
     }
 
-    // Check expiry
-    if (Date.now() > otpData.expiry) {
-        otpStore.delete(phoneNumber);
-        return res.status(400).json({ error: "OTP expired. Please request a new OTP." });
-    }
-
     // Check attempts (max 3)
     if (otpData.attempts >= 3) {
-        otpStore.delete(phoneNumber);
+        await MobileOTP.deleteOne({ phoneNumber });
         return res.status(400).json({ error: "Too many failed attempts. Please request a new OTP." });
     }
 
     // Verify OTP
     const hashedInputOTP = hashOTP(otp, otpData.salt);
     if (hashedInputOTP !== otpData.hashedOTP) {
-        otpData.attempts++;
+        await MobileOTP.updateOne({ phoneNumber }, { $inc: { attempts: 1 } });
         return res.status(400).json({ error: "Invalid OTP. Please try again." });
     }
 
     try {
         // OTP verified successfully
-        otpStore.delete(phoneNumber); // Clean up
+        await MobileOTP.deleteOne({ phoneNumber }); // Clean up
 
         // Generate Mobile VC (without wallet, will be added when connecting wallet)
         const vc = {
@@ -466,6 +489,7 @@ async function sendEmailOTP(email, otp) {
 
 // Send Email OTP endpoint
 app.post('/api/send-email-otp', async (req, res) => {
+    await connectDB();
     const { email, purpose } = req.body;
 
     if (!email) {
@@ -549,6 +573,7 @@ app.post('/api/send-email-otp', async (req, res) => {
 
 // Verify Email OTP endpoint
 app.post('/api/verify-email-otp', async (req, res) => {
+    await connectDB();
     const { email, otp } = req.body;
 
     if (!email || !otp) {
@@ -594,11 +619,5 @@ app.post('/api/verify-email-otp', async (req, res) => {
     }
 });
 
-const PORT = process.env.PORT || 5000;
-
-// Only start the server if this file is run directly (not imported)
-if (require.main === module) {
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-}
-
+// Note: No app.listen() for Vercel serverless; app is exported as handler
 module.exports = app;

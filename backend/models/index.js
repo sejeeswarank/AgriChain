@@ -30,6 +30,14 @@ const PayoutSchema = new mongoose.Schema({
     timestamp: { type: Date, default: Date.now }
 });
 
+const MobileOTPSchema = new mongoose.Schema({
+    phoneNumber: { type: String, required: true, unique: true },
+    hashedOTP: { type: String, required: true },
+    salt: { type: String, required: true },
+    attempts: { type: Number, default: 0 },
+    createdAt: { type: Date, default: Date.now, expires: 300 } // Auto-delete after 5 minutes (TTL index)
+});
+
 // Email OTP Schema for serverless persistence
 const EmailOTPSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true, lowercase: true },
@@ -43,5 +51,6 @@ module.exports = {
     Policy: mongoose.model('Policy', PolicySchema),
     OracleReport: mongoose.model('OracleReport', OracleReportSchema),
     Payout: mongoose.model('Payout', PayoutSchema),
-    EmailOTP: mongoose.model('EmailOTP', EmailOTPSchema)
+    EmailOTP: mongoose.model('EmailOTP', EmailOTPSchema),
+    MobileOTP: mongoose.model('MobileOTP', MobileOTPSchema)
 };
