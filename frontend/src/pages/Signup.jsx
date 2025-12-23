@@ -183,7 +183,6 @@ const Signup = () => {
         <div className="login-container">
             <div className="login-content">
                 <div className="logo-section">
-                    <img src="/logo.png" alt="AgriChain Insurance" className="logo-image" style={{ width: '80px', height: 'auto', marginBottom: '1rem' }} />
                     <h1 className="logo-title">AgriChain <span className="logo-subtitle">Insurance</span></h1>
                     <p className="tagline">{t('auth.tagline')}</p>
                 </div>
@@ -383,4 +382,3 @@ const Signup = () => {
 };
 
 export default Signup;
-// Force Vercel rebuild
