@@ -32,7 +32,9 @@ async function connectDB() {
         return;
     }
     try {
-        await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/agrichain');
+        await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/agrichain', {
+            serverSelectionTimeoutMS: 5000 // Fail after 5 seconds if can't connect
+        });
         console.log('MongoDB Connected');
     } catch (err) {
         console.error('MongoDB Error:', err);
@@ -163,7 +165,9 @@ app.get('/api/geocode', async (req, res) => {
     try {
         const response = await axios.get('https://nominatim.openstreetmap.org/search', {
             params: { q: location, format: 'json', limit: 1 },
-            headers: { 'User-Agent': 'AgriChain/1.0' }
+            params: { q: location, format: 'json', limit: 1 },
+            headers: { 'User-Agent': 'AgriChain/1.0' },
+            timeout: 5000 // 5 seconds timeout
         });
         if (response.data && response.data.length > 0) {
             res.json(response.data[0]);
@@ -197,7 +201,8 @@ app.get('/api/historical-rainfall', async (req, res) => {
                 end_date: formatDate(endDate),
                 daily: 'rain_sum',
                 timezone: 'auto'
-            }
+            },
+            timeout: 5000 // 5 seconds timeout
         });
         res.json(response.data);
     } catch (error) {
@@ -209,7 +214,7 @@ app.get('/api/historical-rainfall', async (req, res) => {
 // 3. ETH Price (CoinGecko)
 app.get('/api/eth-price', async (req, res) => {
     try {
-        const response = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd,inr');
+        const response = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd,inr', { timeout: 5000 });
         res.json(response.data.ethereum);
     } catch (error) {
         console.error("Price Error:", error.message);
@@ -237,7 +242,8 @@ app.post('/api/recommend-policy', async (req, res) => {
                 end_date: formatDate(endDate),
                 daily: 'rain_sum',
                 timezone: 'auto'
-            }
+            },
+            timeout: 5000
         });
 
         const rainData = weatherRes.data.daily.rain_sum || [];
@@ -520,7 +526,8 @@ app.post('/api/send-email-otp', async (req, res) => {
         if (process.env.KICKBOX_API_KEY) {
             try {
                 const kickboxResponse = await axios.get(
-                    `https://api.kickbox.com/v2/verify?email=${encodeURIComponent(email)}&apikey=${process.env.KICKBOX_API_KEY}`
+                    `https://api.kickbox.com/v2/verify?email=${encodeURIComponent(email)}&apikey=${process.env.KICKBOX_API_KEY}`,
+                    { timeout: 5000 } // Fail fast if Kickbox is slow
                 );
 
                 const { result, reason } = kickboxResponse.data;
