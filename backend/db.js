@@ -1,36 +1,34 @@
 const mongoose = require('mongoose');
 
-let isConnected = false;
+let cached = global.mongoose;
+
+if (!cached) {
+    cached = global.mongoose = { conn: null, promise: null };
+}
 
 async function connectDB() {
-    if (isConnected || mongoose.connection.readyState === 1) {
-        isConnected = true;
-        return;
+    if (cached.conn) {
+        return cached.conn;
     }
 
     const uri = process.env.MONGO_URI;
 
-    // Strict check for production
     if (!uri) {
-        if (process.env.NODE_ENV === 'production') {
-            throw new Error("AgriChain Fatal: MONGO_URI is missing in Vercel Environment Variables");
-        }
-        console.warn("⚠️ MONGO_URI not found. Falling back to localhost for DEVELOPMENT only.");
+        throw new Error("❌ MONGO_URI is missing. MongoDB Atlas is REQUIRED on Vercel.");
     }
 
-    const connectionString = uri || 'mongodb://localhost:27017/agrichain';
-
-    try {
-        await mongoose.connect(connectionString, {
+    if (!cached.promise) {
+        cached.promise = mongoose.connect(uri, {
             serverSelectionTimeoutMS: 5000,
-            bufferCommands: false // Disable buffering for immediate feedback
+            bufferCommands: false,
+        }).then((mongoose) => {
+            return mongoose;
         });
-        isConnected = true;
-        console.log(`MongoDB Connected to ${uri ? 'Atlas' : 'Localhost'}`);
-    } catch (err) {
-        console.error('MongoDB Connection Error:', err);
-        throw err;
     }
+
+    cached.conn = await cached.promise;
+    console.log("✅ MongoDB Atlas Connected");
+    return cached.conn;
 }
 
 module.exports = connectDB;
