@@ -1,3 +1,8 @@
+// Load env only in development (Vercel uses its own env vars)
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config({ path: require('path').join(__dirname, '../keys/.env') });
+}
+
 const admin = require('firebase-admin');
 
 // Initialize Firebase Admin (Vercel env vars)
@@ -9,11 +14,6 @@ if (!admin.apps.length) {
             clientEmail: process.env.FIREBASE_CLIENT_EMAIL
         })
     });
-}
-
-// Load env only in development (Vercel uses its own env vars)
-if (process.env.NODE_ENV !== 'production') {
-    require('dotenv').config({ path: require('path').join(__dirname, '../keys/.env') });
 }
 const express = require('express');
 const mongoose = require('mongoose');
