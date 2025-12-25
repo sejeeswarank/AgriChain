@@ -507,7 +507,11 @@ app.post('/api/send-email-otp', async (req, res) => {
         try {
             await admin.auth().getUserByEmail(email.toLowerCase());
         } catch (error) {
-            return res.status(404).json({ error: "No account found with this email address. Please sign up first." });
+            if (error.code === 'auth/user-not-found') {
+                return res.status(404).json({ error: "No account found with this email address. Please sign up first." });
+            }
+            console.error("Error checking user existence:", error);
+            // Don't block login on other errors, but log them
         }
     }
 

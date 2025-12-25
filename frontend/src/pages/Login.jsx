@@ -185,89 +185,40 @@ const Login = () => {
                         {t('login.subtitle')}
                     </p>
 
-                    {/* Login Method Tabs */}
-                    <div className="login-tabs" style={{
-                        display: 'flex',
-                        marginBottom: '24px',
-                        borderRadius: '8px',
-                        overflow: 'hidden',
-                        border: '1px solid #475569'
-                    }}>
-                        <button
-                            type="button"
-                            onClick={() => { setLoginMethod('email'); setStep(1); setError(''); }}
-                            style={{
-                                flex: 1,
-                                padding: '12px',
-                                background: loginMethod === 'email' ? '#10b981' : 'transparent',
-                                color: loginMethod === 'email' ? '#fff' : '#94a3b8',
-                                border: 'none',
-                                cursor: 'pointer',
-                                fontWeight: '500'
-                            }}
-                        >
-                            📧 {t('login.emailTab')}
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => { setLoginMethod('mobile'); setStep(1); setError(''); }}
-                            style={{
-                                flex: 1,
-                                padding: '12px',
-                                background: loginMethod === 'mobile' ? '#10b981' : 'transparent',
-                                color: loginMethod === 'mobile' ? '#fff' : '#94a3b8',
-                                border: 'none',
-                                borderLeft: '1px solid #475569',
-                                cursor: 'pointer',
-                                fontWeight: '500'
-                            }}
-                        >
-                            📱 {t('login.mobileTab')}
-                        </button>
-                    </div>
+                    {/* Login Method Tabs Removed for Single Input Flow */}
 
                     <form onSubmit={handleSubmit}>
-                        {/* Email/Mobile Input */}
+                        {/* Single Input for Email or Mobile */}
                         {step === 1 && (
                             <>
-                                {loginMethod === 'email' ? (
-                                    <div className="input-group">
-                                        <label>{t('signup.email')} *</label>
-                                        <input
-                                            type="email"
-                                            placeholder="farmer@example.com"
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            required
-                                        />
-                                    </div>
-                                ) : (
-                                    <div className="input-group">
-                                        <label>{t('signup.mobile')} *</label>
-                                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                                            <span style={{
-                                                padding: '12px',
-                                                background: '#020617',
-                                                border: '1px solid #475569',
-                                                borderRight: 'none',
-                                                borderRadius: '8px 0 0 8px',
-                                                color: '#94a3b8'
-                                            }}>+91</span>
-                                            <input
-                                                type="tel"
-                                                placeholder="9876543210"
-                                                value={mobile}
-                                                onChange={(e) => setMobile(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                                                maxLength="10"
-                                                required
-                                                style={{ borderRadius: '0 8px 8px 0', borderLeft: 'none' }}
-                                            />
-                                        </div>
+                                <div className="input-group">
+                                    <label>{t('login.emailOrMobile') || 'Email or Mobile Number'} *</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Enter Email or Mobile Number"
+                                        value={loginMethod === 'mobile' ? mobile : email}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            // Simple heuristic: if it has only digits (and maybe length > 3), treat as mobile
+                                            const isNum = /^\d+$/.test(val);
+                                            if (isNum) {
+                                                setLoginMethod('mobile');
+                                                setMobile(val);
+                                                setEmail(''); // clear email
+                                            } else {
+                                                setLoginMethod('email');
+                                                setEmail(val);
+                                                setMobile(''); // clear mobile
+                                            }
+                                        }}
+                                        required
+                                    />
+                                    {loginMethod === 'mobile' && (
                                         <div className="input-note" style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '4px' }}>
                                             {t('login.mobileNote')}
                                         </div>
-                                    </div>
-                                )}
+                                    )}
+                                </div>
 
                                 {/* Auth Method Selection */}
                                 <div className="auth-method" style={{ marginBottom: '20px' }}>
