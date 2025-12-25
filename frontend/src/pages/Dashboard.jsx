@@ -112,9 +112,9 @@ const Dashboard = () => {
             )}
 
             <nav className="dashboard-nav">
-                <div className="nav-brand" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <img src="/logo.png" alt="AgriChain Logo" style={{ height: '40px', width: 'auto' }} />
-                    <span style={{ fontSize: '1.5rem', fontWeight: 'bold', background: 'linear-gradient(135deg, #10b981, #0ea5e9)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                <div className="nav-brand" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <img src="/logo.png" alt="AgriChain Logo" style={{ height: '60px', width: 'auto' }} />
+                    <span style={{ fontSize: '1.8rem', fontWeight: 'bold', background: 'linear-gradient(135deg, #10b981, #0ea5e9)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
                         AgriChain
                     </span>
                 </div>
