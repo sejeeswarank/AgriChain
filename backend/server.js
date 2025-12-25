@@ -582,7 +582,12 @@ app.post('/api/send-email-otp', async (req, res) => {
 
     } catch (error) {
         console.error("Send Email OTP Error:", error);
-        res.status(500).json({ error: "Failed to send OTP" });
+        // RETURN THE ACTUAL ERROR MESSAGE for debugging
+        res.status(500).json({
+            error: "Failed to send OTP",
+            details: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
     }
 });
 
