@@ -9,3 +9,5 @@ dist/
 build/
 artifacts/
 cache/
+.vercel
+.env*.local
