@@ -27,29 +27,8 @@ const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
 const RPC_URL = process.env.RPC_URL || "http://127.0.0.1:8545";
 
 // MongoDB connection function for serverless (per-request)
-async function connectDB() {
-    if (mongoose.connection.readyState === 1) {
-        return;
-    }
-    if (!process.env.MONGO_URI) {
-        // Allow localhost fallback ONLY in development
-        if (process.env.NODE_ENV === 'production') {
-            throw new Error("AgriChain Fatal: MONGO_URI is missing in Vercel Environment Variables");
-        }
-    }
-
-    const uri = process.env.MONGO_URI || 'mongodb://localhost:27017/agrichain';
-
-    try {
-        await mongoose.connect(uri, {
-            serverSelectionTimeoutMS: 5000 // Fail after 5 seconds if can't connect
-        });
-        console.log('MongoDB Connected');
-    } catch (err) {
-        console.error('MongoDB Error:', err);
-        throw err;
-    }
-}
+// MongoDB connection function imported from centralized module
+const connectDB = require('./db');
 
 const app = express();
 app.use(cors({

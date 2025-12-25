@@ -7,32 +7,7 @@ const axios = require('axios');
 // Initialize Resend
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
-// Reusable variables
-let isConnected = false;
-
-// 1. Database Connection (Cached)
-async function connectDB() {
-    if (isConnected) return;
-    if (mongoose.connection.readyState === 1) {
-        isConnected = true;
-        return;
-    }
-
-    if (!process.env.MONGO_URI) {
-        throw new Error("AgriChain Fatal: MONGO_URI is missing in production");
-    }
-
-    try {
-        await mongoose.connect(process.env.MONGO_URI, {
-            serverSelectionTimeoutMS: 5000
-        });
-        isConnected = true;
-        console.log('MongoDB Connected (Serverless)');
-    } catch (err) {
-        console.error('MongoDB Connection Error:', err);
-        throw err;
-    }
-}
+const connectDB = require('../backend/db');
 
 // 2. Helper: Generate OTP
 function generateOTP() {
