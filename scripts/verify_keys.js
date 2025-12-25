@@ -13,9 +13,9 @@ async function checkConfig() {
         console.log("Checking MongoDB Connection...");
         if (!process.env.MONGO_URI) throw new Error("MONGO_URI not found in env");
         await mongoose.connect(process.env.MONGO_URI);
-        console.log("✅ MongoDB Connection Successful");
+        console.log("MongoDB Connection Successful");
     } catch (e) {
-        console.error("❌ MongoDB Connection Failed:", e.message);
+        console.error("MongoDB Connection Failed:", e.message);
         allGood = false;
     } finally {
         await mongoose.disconnect();
