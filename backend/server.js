@@ -31,12 +31,14 @@ async function connectDB() {
     if (mongoose.connection.readyState === 1) {
         return;
     }
-    const uri = process.env.MONGO_URI || 'mongodb://localhost:27017/agrichain';
-
-    // Fail fast in production if no URI
-    if (!process.env.MONGO_URI && process.env.NODE_ENV === 'production') {
-        throw new Error("AgriChain Fatal: MONGO_URI is missing in Vercel Environment Variables");
+    if (!process.env.MONGO_URI) {
+        // Allow localhost fallback ONLY in development
+        if (process.env.NODE_ENV === 'production') {
+            throw new Error("AgriChain Fatal: MONGO_URI is missing in Vercel Environment Variables");
+        }
     }
+
+    const uri = process.env.MONGO_URI || 'mongodb://localhost:27017/agrichain';
 
     try {
         await mongoose.connect(uri, {
