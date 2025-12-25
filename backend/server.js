@@ -31,8 +31,15 @@ async function connectDB() {
     if (mongoose.connection.readyState === 1) {
         return;
     }
+    const uri = process.env.MONGO_URI || 'mongodb://localhost:27017/agrichain';
+
+    // Fail fast in production if no URI
+    if (!process.env.MONGO_URI && process.env.NODE_ENV === 'production') {
+        throw new Error("AgriChain Fatal: MONGO_URI is missing in Vercel Environment Variables");
+    }
+
     try {
-        await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/agrichain', {
+        await mongoose.connect(uri, {
             serverSelectionTimeoutMS: 5000 // Fail after 5 seconds if can't connect
         });
         console.log('MongoDB Connected');
