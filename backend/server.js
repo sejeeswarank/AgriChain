@@ -454,7 +454,13 @@ async function sendEmailOTP(email, otp) {
     // If Resend API key is configured, send real email
     if (resend && process.env.RESEND_API_KEY) {
         try {
-            const { data, error } = await resend.emails.send({
+            // Create a timeout promise
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Email sending timed out')), 5000)
+            );
+
+            // Race Resend against timeout
+            const emailPromise = resend.emails.send({
                 from: 'AgriChain <noreply@agrichain.tech>',
                 to: [email],
                 subject: 'Your AgriChain Verification Code',
@@ -476,14 +482,25 @@ async function sendEmailOTP(email, otp) {
                 `
             });
 
+            const { data, error } = await Promise.race([emailPromise, timeoutPromise]);
+
             if (error) {
                 console.error('Resend error:', error);
+                // Don't throw, just log. We still returned the console OTP so dev/user might be able to proceed if they have access to logs (unlikely for end user but prevents 500)
+                // Actually, for production we should probably throw if email fails.
+                // But to avoid 504 blocking, we proceed if timeout/error.
                 throw new Error(`Failed to send email: ${error.message}`);
             } else {
                 console.log(`Real email sent to ${email} via Resend`);
             }
         } catch (error) {
             console.error('Email sending failed:', error.message);
+            // We allow the process to continue even if email fails, 
+            // because the OTP is stored in DB. 
+            // In a real strict app, we should fail here. 
+            // But for debugging 504s, let's ensure we return a response.
+            // Re-throwing so the frontend knows email failed, unless we want to "pretend" success for testing? 
+            // No, re-throw is better UX.
             throw new Error('Failed to send verification email. Please try again.');
         }
     } else {
@@ -527,7 +544,7 @@ app.post('/api/send-email-otp', async (req, res) => {
             try {
                 const kickboxResponse = await axios.get(
                     `https://api.kickbox.com/v2/verify?email=${encodeURIComponent(email)}&apikey=${process.env.KICKBOX_API_KEY}`,
-                    { timeout: 5000 } // Fail fast if Kickbox is slow
+                    { timeout: 2500 } // Fail fast (2.5s) if Kickbox is slow
                 );
 
                 const { result, reason } = kickboxResponse.data;
