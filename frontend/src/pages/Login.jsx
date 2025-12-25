@@ -195,7 +195,7 @@ const Login = () => {
                                     <label>{t('login.emailOrMobile') || 'Email or Mobile Number'} *</label>
                                     <input
                                         type="text"
-                                        placeholder="Enter Email or Mobile Number"
+                                        placeholder="hi Enter Email or Mobile Number"
                                         value={loginMethod === 'mobile' ? mobile : email}
                                         onChange={(e) => {
                                             const val = e.target.value;
