@@ -58,7 +58,7 @@ function InsuranceDashboard() {
 
     const fetchEthPrice = async () => {
         try {
-            const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/eth-price`);
+            const res = await axios.get(`/api/eth-price`);
             setEthRates(res.data);
         } catch (e) { console.error("Price fetch error", e); }
     };
@@ -67,7 +67,7 @@ function InsuranceDashboard() {
         if (!locationQuery) return;
         setLoadingRec(true);
         try {
-            const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/geocode?location=${locationQuery}`);
+            const res = await axios.get(`/api/geocode?location=${locationQuery}`);
             if (res.data) {
                 const { lat, lon } = res.data;
                 setLat(lat);
@@ -108,7 +108,7 @@ function InsuranceDashboard() {
 
     const getRecommendation = async (latitude, longitude) => {
         try {
-            const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/recommend-policy`, { lat: latitude, lon: longitude });
+            const res = await axios.post(`/api/recommend-policy`, { lat: latitude, lon: longitude });
             setRecommendation(res.data);
 
             // Auto-select "Standard" plan driven by recommendation
@@ -159,7 +159,7 @@ function InsuranceDashboard() {
             const loadedPolicies = [];
 
             try {
-                const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/policies/${account}`);
+                const res = await axios.get(`/api/policies/${account}`);
                 setPolicies(res.data);
             } catch (e) {
                 console.log("Backend not reachable, showing empty or mock");
@@ -190,7 +190,7 @@ function InsuranceDashboard() {
             alert(t('common.submit') + " Success!");
             fetchPolicies();
 
-            await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/policies`, {
+            await axios.post(`/api/policies`, {
                 policyId: Date.now(),
                 farmer: account,
                 indexId: indexIdStr,
