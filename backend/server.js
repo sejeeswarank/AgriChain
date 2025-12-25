@@ -119,6 +119,10 @@ if (CONTRACT_ADDRESS) {
 
 app.get('/', (req, res) => res.send('AgriChain Backend Running'));
 
+app.get('/api/health', (req, res) => {
+    res.json({ status: "ok" });
+});
+
 app.get('/api/policies/:farmer', async (req, res) => {
     try {
         // Case-insensitive search for the farmer's address
