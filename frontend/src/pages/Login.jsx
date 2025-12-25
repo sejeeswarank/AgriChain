@@ -192,7 +192,7 @@ const Login = () => {
                         {step === 1 && (
                             <>
                                 <div className="input-group">
-                                    <label>{t('login.emailOrMobile') || 'Email or Mobile Number'} *</label>
+                                    <label>{t('Login') || 'Email or Mobile Number'} *</label>
                                     <input
                                         type="text"
                                         placeholder="Enter Email or Mobile Number"
