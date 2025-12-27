@@ -130,7 +130,8 @@ const Login = () => {
             }
         } catch (err) {
             console.error('Send OTP error:', err);
-            setError(err.message || err.response?.data?.error || 'Failed to send OTP');
+            // Prioritize server error message (e.g., "No account found...") over generic axios error
+            setError(err.response?.data?.error || err.message || 'Failed to send OTP');
         }
 
         setLoading(false);
