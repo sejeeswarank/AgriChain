@@ -34,9 +34,9 @@ async function sendEmail(email, otp) {
                 html: `
                     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
                         <!-- Header -->
-                        <div style="background-color: #15201dff; padding: 32px 20px; text-align: center;">
+                        <div style="background-color: #1e293b; padding: 32px 20px; text-align: center;">
                              <div style="font-size: 26px; font-weight: bold; display: flex; align-items: center; justify-content: center;">
-                                <img src="https://agrichain.tech/logo.png" alt="AgriChain" style="height: 32px; width: auto; display: block; margin-right: 16px;">
+                                <img src="https://agrichain.tech/logo.png" alt="AgriChain" style="height: 48px; width: auto; display: block; margin-right: 16px;">
                                 <div style="display: flex; align-items: baseline; line-height: 1;">
                                     <span style="color: #10b981; margin-right: 5px;">AgriChain Insurance</span>
                                 </div>

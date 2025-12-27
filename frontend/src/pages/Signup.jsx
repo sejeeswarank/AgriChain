@@ -294,7 +294,7 @@ const Signup = () => {
                                     <label>{t('login.enterOtp')} *</label>
                                     <input
                                         type="text"
-                                        placeholder="Enter 6-digit OTP"
+                                        placeholder="Enter 6 digit OTP"
                                         value={otp}
                                         onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                                         maxLength="6"
