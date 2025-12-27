@@ -83,7 +83,8 @@ export const createUserProfile = async (user, additionalData = {}) => {
                 uid: user.uid,
                 fullName: additionalData.fullName || '',
                 email: email || '',
-                mobileNumber: phoneNumber || '',
+                // Fix: Prioritize additionalData.mobileNumber (from signup form) over user.phoneNumber (from Auth provider)
+                mobileNumber: additionalData.mobileNumber || phoneNumber || '',
                 createdAt,
                 ...additionalData
             });
@@ -107,14 +108,16 @@ export const getUserProfile = async (uid) => {
         return null;
     } catch (error) {
         console.error('Error getting user profile:', error);
-        return null;
+        return null; // Handle error gracefully (e.g. permission denied)
     }
 };
 
 // Phone to email mapping functions
+// REFACTOR: Use a separate collection 'phone_mappings' to avoid conflict with 'users' (profiles)
+// and to allow specific security rules (public read for lookup).
 export const savePhoneEmailMapping = async (phone, email) => {
     try {
-        const phoneRef = doc(db, 'users', phone);
+        const phoneRef = doc(db, 'phone_mappings', phone);
         await setDoc(phoneRef, {
             email: email,
             phone: phone,
@@ -129,7 +132,7 @@ export const savePhoneEmailMapping = async (phone, email) => {
 
 export const getEmailByPhone = async (phone) => {
     try {
-        const phoneRef = doc(db, 'users', phone);
+        const phoneRef = doc(db, 'phone_mappings', phone);
         const phoneSnap = await getDoc(phoneRef);
 
         if (phoneSnap.exists()) {
@@ -138,6 +141,8 @@ export const getEmailByPhone = async (phone) => {
         return null;
     } catch (error) {
         console.error('Error getting email by phone:', error);
+        // If this fails, it's likely a Permission Denied error because 
+        // Firestore Rules block unauthenticated reads.
         return null;
     }
 };
