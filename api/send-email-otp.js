@@ -4,10 +4,26 @@ const { EmailOTP } = require('../backend/models');
 const connectDB = require('../backend/db');
 const crypto = require('crypto');
 const axios = require('axios');
+const admin = require('firebase-admin');
 
 // Initialize Resend (Runs once per Cold Start)
-// This is safe to keep top-level as it doesn't IO, just config.
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+
+// Initialize Firebase Admin (Runs once per Cold Start)
+if (!admin.apps.length) {
+    try {
+        admin.initializeApp({
+            credential: admin.credential.cert({
+                projectId: process.env.FIREBASE_PROJECT_ID,
+                privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+                clientEmail: process.env.FIREBASE_CLIENT_EMAIL
+            })
+        });
+        console.log("Firebase Admin Initialized");
+    } catch (error) {
+        console.error("Firebase Admin Init Error:", error.message);
+    }
+}
 
 // Helper: Generate OTP
 function generateOTP() {
@@ -20,8 +36,6 @@ function hashOTP(otp, salt) {
 }
 
 // Helper: Send Email
-// REFACTOR: This function is now fully independent of MongoDB.
-// It relies only on Resend API.
 async function sendEmail(email, otp) {
     console.log(`\nSending OTP to ${email}: ${otp}\n`);
 
@@ -65,12 +79,10 @@ async function sendEmail(email, otp) {
             return true;
         } catch (e) {
             console.error("Resend Execution Error:", e.message);
-            // Critical fail: If we can't send email, we stop here.
             throw new Error("Failed to send email via Resend Provider");
         }
     } else {
         console.warn("Resend Not Configured. Check Console for OTP. (Dev Mode)");
-        // In local dev without key, this counts as success so we can test DB flow
         return true;
     }
 }
@@ -90,11 +102,34 @@ module.exports = async (req, res) => {
         return res.status(405).json({ error: 'Method not allowed. Use POST.' });
     }
 
-    const { email } = req.body;
+    const { email, purpose } = req.body;
     if (!email) return res.status(400).json({ error: "Email required" });
 
     try {
-        // 2. Optional: Kickbox Verification (No DB dependency)
+        // 2. CHECK USER EXISTENCE (Login Flow Only)
+        if (purpose === 'login') {
+            try {
+                // Determine if configured (Skip if dev/missing keys)
+                if (admin.apps.length) {
+                    await admin.auth().getUserByEmail(email.toLowerCase());
+                    console.log(`User exists: ${email}`);
+                } else {
+                    console.warn("Firebase Admin not configured, skipping user check.");
+                }
+            } catch (error) {
+                if (error.code === 'auth/user-not-found') {
+                    console.warn(`Login attempt for non-existent user: ${email}`);
+                    return res.status(404).json({
+                        error: "No account found with this email address. Please sign up first."
+                    });
+                }
+                console.error("Error checking user existence:", error);
+                // On system error, we might choose to fail open or closed. 
+                // Failing open (allowing OTP) is safer for UX if Firebase Admin is just misconfigured temporarily.
+            }
+        }
+
+        // 3. Optional: Kickbox Verification
         if (process.env.KICKBOX_API_KEY) {
             try {
                 const kRes = await axios.get(`https://api.kickbox.com/v2/verify?email=${encodeURIComponent(email)}&apikey=${process.env.KICKBOX_API_KEY}`);
@@ -104,29 +139,26 @@ module.exports = async (req, res) => {
             }
         }
 
-        // 3. Generate Logic
+        // 4. Generate Logic
         const otp = generateOTP();
         const salt = crypto.randomBytes(16).toString('hex');
         const hashedOTP = hashOTP(otp, salt);
 
-        // 4. Send Email FIRST
-        // CRITICAL: We attempt email delivery BEFORE any database connection.
-        // This ensures bad DB config doesn't block email (though success requires both).
+        // 5. Send Email FIRST
         await sendEmail(email, otp);
 
-        // 5. Connect to MongoDB & Store
+        // 6. Connect to MongoDB & Store
         try {
             console.log("Connecting to MongoDB to store OTP...");
-            await connectDB(); // Utilizing cached connection pattern from backend/db.js
+            await connectDB();
 
-            // Store with Upsert (Update if exists, Insert if new)
             await EmailOTP.findOneAndUpdate(
                 { email: email.toLowerCase() },
                 {
                     hashedOTP,
                     salt,
                     attempts: 0,
-                    createdAt: new Date() // Resets TTL
+                    createdAt: new Date()
                 },
                 { upsert: true, new: true }
             );
@@ -134,16 +166,13 @@ module.exports = async (req, res) => {
 
         } catch (dbError) {
             console.error("CRITICAL: Email sent, but MongoDB storage failed:", dbError);
-            // Scenario: User has OTP, but DB is down. 
-            // We return 500 because the OTP is effectively invalid (cannot be verified).
-            // Frontend should handle this instructions to User ("Service degraded, please try again").
             return res.status(500).json({
                 error: "Service Warning: OTP Email sent, but verification system is temporarily unavailable. Please try again later.",
                 details: dbError.message
             });
         }
 
-        // 6. Return Success
+        // 7. Return Success
         return res.status(200).json({
             success: true,
             message: "OTP sent successfully",
