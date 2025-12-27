@@ -298,7 +298,7 @@ const Login = () => {
                                     marginBottom: '20px'
                                 }}>
                                     <p style={{ color: '#10b981', margin: 0, fontSize: '0.9rem' }}>
-                                        📧 {t('login.otpSentTo')} <strong>{loginMethod === 'email' ? email : resolvedEmail}</strong>
+                                        {t('login.otpSentTo')} <strong>{loginMethod === 'email' ? email : resolvedEmail}</strong>
                                     </p>
                                 </div>
 

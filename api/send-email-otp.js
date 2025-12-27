@@ -38,8 +38,7 @@ async function sendEmail(email, otp) {
                              <div style="font-size: 26px; font-weight: bold; display: flex; align-items: center; justify-content: center;">
                                 <img src="https://agrichain.tech/logo.png" alt="AgriChain" style="height: 32px; width: auto; display: block; margin-right: 16px;">
                                 <div style="display: flex; align-items: baseline; line-height: 1;">
-                                    <span style="color: #10b981; margin-right: 5px;">AgriChain</span>
-                                    <span style="color: #0ea5e9; font-size: 15px; font-weight: 600;">Insurance</span>
+                                    <span style="color: #10b981; margin-right: 5px;">AgriChain Insurance</span>
                                 </div>
                              </div>
                         </div>
