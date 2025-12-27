@@ -75,11 +75,11 @@ const Login = () => {
                 let msg = result.error || 'Invalid credentials. Please try again.';
                 // Catchy error messages logic
                 if (msg.includes('invalid-credential') || msg.includes('auth/invalid-credential')) {
-                    msg = "Oops! Incorrect email or password. Double-check your keys!";
+                    msg = "Oops! We couldn't find your account or the password is wrong. Time to Sign Up?";
                 } else if (msg.includes('user-not-found') || msg.includes('auth/user-not-found')) {
                     msg = "We couldn't find an account with that email. Time to sign up?";
                 } else if (msg.includes('wrong-password') || msg.includes('auth/wrong-password')) {
-                    msg = "That password didn't unlock the gate. Try again?";
+                    msg = "Invalid password. Try again?";
                 } else if (msg.includes('too-many-requests') || msg.includes('auth/too-many-requests')) {
                     msg = "Whoa there! Too many failed attempts. Take a breather and try again later.";
                 }
@@ -95,7 +95,7 @@ const Login = () => {
             } else if (err.code === 'auth/user-not-found' || err.message.includes('user-not-found')) {
                 msg = "We couldn't find an account with that email. Time to sign up?";
             } else if (err.code === 'auth/wrong-password' || err.message.includes('wrong-password')) {
-                msg = "That password didn't unlock the gate. Try again?";
+                msg = "Invalid password. Try again?";
             } else if (err.code === 'auth/too-many-requests') {
                 msg = "Whoa there! Too many failed attempts. Take a breather and try again later.";
             } else if (err.message) {
