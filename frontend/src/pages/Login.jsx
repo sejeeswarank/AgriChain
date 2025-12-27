@@ -24,7 +24,7 @@ const Login = () => {
     const [error, setError] = useState('');
     const [otpSent, setOtpSent] = useState(false);
 
-    const { user, loginWithEmailPassword } = useAuth();
+    const { user, loginWithEmailPassword, loginWithOTP } = useAuth();
     const { isWalletConnected, connectWallet } = useWallet();
     const navigate = useNavigate();
     const { t } = useLanguage();
@@ -157,13 +157,15 @@ const Login = () => {
                 return;
             }
 
-            // OTP verified - for OTP login, we need to sign in the user
-            // Since Firebase doesn't support OTP sign-in directly, we'll use a custom token approach
-            // For now, we'll check if user exists and allow access
-            // In production, you'd use Firebase Admin SDK to create custom tokens
+            // Custom token approach simulator
+            // Use context method to update state immediately
+            const loginResult = await loginWithOTP(targetEmail);
 
-            // Store verified email in session for dashboard access
-            sessionStorage.setItem('otpVerifiedEmail', targetEmail);
+            if (!loginResult.success) {
+                setError(loginResult.error || 'Failed to login');
+                setLoading(false);
+                return;
+            }
 
             // Check wallet connection
             if (!isWalletConnected) {

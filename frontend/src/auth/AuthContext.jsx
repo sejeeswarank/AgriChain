@@ -170,12 +170,43 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    // Login with OTP (Session based)
+    const loginWithOTP = async (email) => {
+        try {
+            // Set session storage
+            sessionStorage.setItem('otpVerifiedEmail', email);
+
+            // Create pseudo-user object
+            const otpUser = {
+                email: email,
+                uid: 'otp-' + email,
+                emailVerified: true,
+                isOtpUser: true
+            };
+
+            // Update state immediately
+            setUser(otpUser);
+            setUserProfile({
+                uid: otpUser.uid,
+                email: email,
+                fullName: email.split('@')[0],
+                authMethod: 'email-otp'
+            });
+
+            return { success: true, user: otpUser };
+        } catch (error) {
+            console.error('OTP Login error:', error);
+            return { success: false, error: 'Failed to create session' };
+        }
+    };
+
     const value = {
         user,
         userProfile,
         loading,
         logout,
         loginWithEmailPassword,
+        loginWithOTP,
         signupWithEmailPassword
     };
 
