@@ -2,21 +2,26 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWallet } from '../context/WalletContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../auth/AuthContext';
 
 const WalletConnectPage = () => {
     const navigate = useNavigate();
     const { connectWallet, isConnecting, error, isWalletConnected } = useWallet();
     const { t } = useLanguage();
+    const { logout } = useAuth();
 
     // If wallet already connected, redirect to login
     React.useEffect(() => {
         if (isWalletConnected) {
-            // Redirect to login after successful wallet connection
-            setTimeout(() => {
-                navigate('/');
-            }, 1500);
+            const performLogoutAndRedirect = async () => {
+                await logout(); // Force logout to prevent auto-redirect to dashboard
+                setTimeout(() => {
+                    navigate('/'); // Send to Login page
+                }, 1500);
+            };
+            performLogoutAndRedirect();
         }
-    }, [isWalletConnected, navigate]);
+    }, [isWalletConnected, navigate, logout]);
 
     const handleConnect = async () => {
         const result = await connectWallet();
