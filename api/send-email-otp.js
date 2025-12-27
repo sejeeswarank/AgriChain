@@ -23,7 +23,7 @@ function hashOTP(otp, salt) {
 // REFACTOR: This function is now fully independent of MongoDB.
 // It relies only on Resend API.
 async function sendEmail(email, otp) {
-    console.log(`\n📧 Sending OTP to ${email}: ${otp}\n`);
+    console.log(`\nSending OTP to ${email}: ${otp}\n`);
 
     if (resend && process.env.RESEND_API_KEY) {
         try {
@@ -34,7 +34,7 @@ async function sendEmail(email, otp) {
                 html: `
                     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
                         <!-- Header -->
-                        <div style="background-color: #10b981; padding: 32px 20px; text-align: center;">
+                        <div style="background-color: #15201dff; padding: 32px 20px; text-align: center;">
                              <div style="color: #ffffff; font-size: 26px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 12px;">
                                 <img src="https://agrichain.tech/logo.png" alt="AgriChain" style="height: 40px; width: auto; display: block;">
                                 <span>AgriChain Insurance</span>
@@ -61,7 +61,7 @@ async function sendEmail(email, otp) {
                 throw new Error(error.message);
             }
 
-            console.log(`✅ Email sent via Resend to ${email}`);
+            console.log(`Email sent via Resend to ${email}`);
             return true;
         } catch (e) {
             console.error("Resend Execution Error:", e.message);
@@ -69,7 +69,7 @@ async function sendEmail(email, otp) {
             throw new Error("Failed to send email via Resend Provider");
         }
     } else {
-        console.warn("⚠️ Resend Not Configured. Check Console for OTP. (Dev Mode)");
+        console.warn("Resend Not Configured. Check Console for OTP. (Dev Mode)");
         // In local dev without key, this counts as success so we can test DB flow
         return true;
     }
@@ -130,7 +130,7 @@ module.exports = async (req, res) => {
                 },
                 { upsert: true, new: true }
             );
-            console.log("✅ OTP stored in MongoDB");
+            console.log("OTP stored in MongoDB");
 
         } catch (dbError) {
             console.error("CRITICAL: Email sent, but MongoDB storage failed:", dbError);
