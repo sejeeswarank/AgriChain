@@ -1,25 +1,27 @@
 const mongoose = require('mongoose');
 const { Resend } = require('resend');
 const { EmailOTP } = require('../backend/models');
+const connectDB = require('../backend/db');
 const crypto = require('crypto');
 const axios = require('axios');
 
-// Initialize Resend
+// Initialize Resend (Runs once per Cold Start)
+// This is safe to keep top-level as it doesn't IO, just config.
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
-const connectDB = require('../backend/db');
-
-// 2. Helper: Generate OTP
+// Helper: Generate OTP
 function generateOTP() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-// 3. Helper: Hash OTP
+// Helper: Hash OTP
 function hashOTP(otp, salt) {
     return crypto.createHash('sha256').update(otp + salt).digest('hex');
 }
 
-// 4. Helper: Send Email
+// Helper: Send Email
+// REFACTOR: This function is now fully independent of MongoDB.
+// It relies only on Resend API.
 async function sendEmail(email, otp) {
     console.log(`\n📧 Sending OTP to ${email}: ${otp}\n`);
 
@@ -39,25 +41,32 @@ async function sendEmail(email, otp) {
                     </div>
                 `
             });
-            if (error) throw new Error(error.message);
+
+            if (error) {
+                console.error("Resend API returned error:", error);
+                throw new Error(error.message);
+            }
+
             console.log(`✅ Email sent via Resend to ${email}`);
             return true;
         } catch (e) {
-            console.error("Resend Error:", e.message);
+            console.error("Resend Execution Error:", e.message);
+            // Critical fail: If we can't send email, we stop here.
             throw new Error("Failed to send email via Resend Provider");
         }
     } else {
-        console.log("⚠️ Resend Not Configured. Check Console for OTP.");
-        return true; // Dev mode success
+        console.warn("⚠️ Resend Not Configured. Check Console for OTP. (Dev Mode)");
+        // In local dev without key, this counts as success so we can test DB flow
+        return true;
     }
 }
 
-// 5. Main Vercel Serverless Handler
+// Main Vercel Serverless Handler
 module.exports = async (req, res) => {
-    // Enable CORS for this function specifically (or rely on Vercel headers if configured, but better to be safe)
+    // 1. CORS & Methods
     res.setHeader('Access-Control-Allow-Credentials', true);
-    res.setHeader('Access-Control-Allow-Origin', '*'); // Adjust for production if needed
-    // Simple preflight handling
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
     if (req.method === 'OPTIONS') {
         res.status(200).end();
         return;
@@ -67,35 +76,60 @@ module.exports = async (req, res) => {
         return res.status(405).json({ error: 'Method not allowed. Use POST.' });
     }
 
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: "Email required" });
+
     try {
-        await connectDB();
-
-        const { email } = req.body;
-        if (!email) return res.status(400).json({ error: "Email required" });
-
-        // Kickbox Verification (Optional - Copied from server.js for parity)
+        // 2. Optional: Kickbox Verification (No DB dependency)
         if (process.env.KICKBOX_API_KEY) {
             try {
                 const kRes = await axios.get(`https://api.kickbox.com/v2/verify?email=${encodeURIComponent(email)}&apikey=${process.env.KICKBOX_API_KEY}`);
                 if (kRes.data.result === 'undeliverable') return res.status(400).json({ error: "Undeliverable Email" });
-            } catch (kErr) { console.error("Kickbox skipped:", kErr.message); }
+            } catch (kErr) {
+                console.warn("Kickbox skipped due to error:", kErr.message);
+            }
         }
 
-        // Logic
+        // 3. Generate Logic
         const otp = generateOTP();
         const salt = crypto.randomBytes(16).toString('hex');
         const hashedOTP = hashOTP(otp, salt);
 
-        // Store
-        await EmailOTP.findOneAndUpdate(
-            { email: email.toLowerCase() },
-            { hashedOTP, salt, attempts: 0, createdAt: new Date() },
-            { upsert: true, new: true }
-        );
-
-        // Send
+        // 4. Send Email FIRST
+        // CRITICAL: We attempt email delivery BEFORE any database connection.
+        // This ensures bad DB config doesn't block email (though success requires both).
         await sendEmail(email, otp);
 
+        // 5. Connect to MongoDB & Store
+        try {
+            console.log("Connecting to MongoDB to store OTP...");
+            await connectDB(); // Utilizing cached connection pattern from backend/db.js
+
+            // Store with Upsert (Update if exists, Insert if new)
+            await EmailOTP.findOneAndUpdate(
+                { email: email.toLowerCase() },
+                {
+                    hashedOTP,
+                    salt,
+                    attempts: 0,
+                    createdAt: new Date() // Resets TTL
+                },
+                { upsert: true, new: true }
+            );
+            console.log("✅ OTP stored in MongoDB");
+
+        } catch (dbError) {
+            console.error("CRITICAL: Email sent, but MongoDB storage failed:", dbError);
+            // Scenario: User has OTP, but DB is down. 
+            // We return 500 because the OTP is effectively invalid (cannot be verified).
+            // Frontend should handle this instructions to User ("Service degraded, please try again").
+            return res.status(500).json({
+                error: "Service Warning: OTP Email sent, but verification system is temporarily unavailable. Please try again later.",
+                details: dbError.message
+            });
+        }
+
+        // 6. Return Success
         return res.status(200).json({
             success: true,
             message: "OTP sent successfully",
@@ -103,7 +137,7 @@ module.exports = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Serverless OTP Error:", error);
+        console.error("Serverless OTP Internal Error:", error);
         return res.status(500).json({
             error: "Failed to send OTP",
             details: error.message
