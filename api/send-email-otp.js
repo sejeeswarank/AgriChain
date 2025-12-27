@@ -42,7 +42,7 @@ async function sendEmail(email, otp) {
                         </div>
                         
                         <!-- Body -->
-                        <div style="padding: 40px 32px; background-color: #ffffff;">
+                        <div style="padding: 40px 32px; background-color: #c2bcbcff;">
                             <h2 style="color: #1e293b; margin: 0 0 16px 0; font-size: 20px; font-weight: 600;">Verification Code</h2>
                             <p style="color: #64748b; margin: 0 0 24px 0; font-size: 16px;">Your one-time verification code is:</p>
                             
