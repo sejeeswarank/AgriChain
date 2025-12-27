@@ -32,12 +32,25 @@ async function sendEmail(email, otp) {
                 to: [email],
                 subject: 'Your AgriChain Verification Code',
                 html: `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                        <h2 style="color: #1e293b;">Verification Code</h2>
-                        <div style="background: #1e293b; color: #10b981; font-size: 32px; font-weight: bold; text-align: center; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                            ${otp}
+                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                        <!-- Header -->
+                        <div style="background-color: #10b981; padding: 32px 20px; text-align: center;">
+                             <div style="color: #ffffff; font-size: 26px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <span>🌾</span> AgriChain Insurance
+                             </div>
                         </div>
-                        <p>Expires in 5 minutes.</p>
+                        
+                        <!-- Body -->
+                        <div style="padding: 40px 32px; background-color: #ffffff;">
+                            <h2 style="color: #1e293b; margin: 0 0 16px 0; font-size: 20px; font-weight: 600;">Verification Code</h2>
+                            <p style="color: #64748b; margin: 0 0 24px 0; font-size: 16px;">Your one-time verification code is:</p>
+                            
+                            <div style="background-color: #1e293b; color: #10b981; font-size: 32px; font-weight: bold; text-align: center; padding: 24px; border-radius: 8px; letter-spacing: 12px; margin-bottom: 24px;">
+                                ${otp}
+                            </div>
+                            
+                            <p style="color: #94a3b8; font-size: 13px; text-align: center; margin: 0;">This code expires in 5 minutes.</p>
+                        </div>
                     </div>
                 `
             });
