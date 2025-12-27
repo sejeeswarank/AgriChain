@@ -312,8 +312,8 @@ const Login = () => {
                                         maxLength="6"
                                         style={{
                                             textAlign: 'center',
-                                            fontSize: '1.5rem',
-                                            letterSpacing: '8px',
+                                            fontSize: '1.0rem',
+                                            letterSpacing: '6px',
                                             fontWeight: 'bold'
                                         }}
                                         required
