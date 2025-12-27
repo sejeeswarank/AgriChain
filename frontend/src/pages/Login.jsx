@@ -192,7 +192,7 @@ const Login = () => {
                         {step === 1 && (
                             <>
                                 <div className="input-group">
-                                    <label>{t('Login') || 'Email or Mobile Number'} *</label>
+                                    <label>{t('Login') || 'Email or Mobile Number'} </label>
                                     <input
                                         type="text"
                                         placeholder="Enter Email or Mobile Number"
@@ -264,7 +264,7 @@ const Login = () => {
                                 {/* Password Input (if password method) */}
                                 {authMethod === 'password' && (
                                     <div className="input-group">
-                                        <label>{t('login.password')} *</label>
+                                        <label>{t('login.password')} </label>
                                         <input
                                             type="password"
                                             placeholder="Enter your password"
@@ -303,7 +303,7 @@ const Login = () => {
                                 </div>
 
                                 <div className="input-group">
-                                    <label>{t('login.enterOtp')} *</label>
+                                    <label>{t('login.enterOtp')} </label>
                                     <input
                                         type="text"
                                         placeholder="Enter 6 digit OTP"

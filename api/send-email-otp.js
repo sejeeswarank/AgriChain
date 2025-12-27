@@ -34,7 +34,7 @@ async function sendEmail(email, otp) {
                 html: `
                     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
                         <!-- Header -->
-                        <div style="background-color: #1e293b; padding: 32px 20px; text-align: center;">
+                        <div style="background-color: #1e293bff; padding: 32px 20px; text-align: center;">
                              <div style="font-size: 26px; font-weight: bold; display: flex; align-items: center; justify-content: center;">
                                 <img src="https://agrichain.tech/logo.png" alt="AgriChain" style="height: 48px; width: auto; display: block; margin-right: 16px;">
                                 <span style="color: #10b981;">AgriChain Insurance</span>
@@ -42,11 +42,11 @@ async function sendEmail(email, otp) {
                         </div>
                         
                         <!-- Body -->
-                        <div style="padding: 40px 32px; background-color: #c2bcbcff;">
+                        <div style="padding: 40px 32px; background-color: #ebebebff;">
                             <h2 style="color: #1e293b; margin: 0 0 16px 0; font-size: 20px; font-weight: 600;">Verification Code</h2>
                             <p style="color: #64748b; margin: 0 0 24px 0; font-size: 16px;">Your one-time verification code is:</p>
                             
-                            <div style="background-color: #25c448ff; color: #b5cbc4ff; font-size: 32px; font-weight: bold; text-align: center; padding: 24px; border-radius: 8px; letter-spacing: 12px; margin-bottom: 24px;">
+                            <div style="background-color: #25b688ff; color: #fefefeff; font-size: 32px; font-weight: bold; text-align: center; padding: 24px; border-radius: 8px; letter-spacing: 12px; margin-bottom: 24px;">
                                 ${otp}
                             </div>
                             

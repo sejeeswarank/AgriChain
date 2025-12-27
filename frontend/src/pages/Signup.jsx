@@ -209,7 +209,7 @@ const Signup = () => {
 
                             <form onSubmit={(e) => { e.preventDefault(); handleSendOTP(); }}>
                                 <div className="input-group">
-                                    <label>{t('signup.fullName')} *</label>
+                                    <label>{t('signup.fullName')} </label>
                                     <input
                                         type="text"
                                         placeholder="Enter your full name"
@@ -220,7 +220,7 @@ const Signup = () => {
                                 </div>
 
                                 <div className="input-group">
-                                    <label>{t('signup.email')} *</label>
+                                    <label>{t('signup.email')} </label>
                                     <input
                                         type="email"
                                         placeholder="farmer@example.com"
@@ -231,7 +231,7 @@ const Signup = () => {
                                 </div>
 
                                 <div className="input-group">
-                                    <label>{t('signup.mobile')} *</label>
+                                    <label>{t('signup.mobile')} </label>
                                     <div style={{ display: 'flex', alignItems: 'center' }}>
                                         <span style={{
                                             padding: '12px',
@@ -254,7 +254,7 @@ const Signup = () => {
                                 </div>
 
                                 <div className="input-group">
-                                    <label>{t('signup.password')} *</label>
+                                    <label>{t('signup.password')} </label>
                                     <input
                                         type="password"
                                         placeholder="Minimum 6 characters"
@@ -265,7 +265,7 @@ const Signup = () => {
                                 </div>
 
                                 <div className="input-group">
-                                    <label>{t('signup.confirmPassword')} *</label>
+                                    <label>{t('signup.confirmPassword')} </label>
                                     <input
                                         type="password"
                                         placeholder="Re-enter password"
@@ -291,7 +291,7 @@ const Signup = () => {
 
                             <form onSubmit={(e) => { e.preventDefault(); handleVerifyOTP(); }}>
                                 <div className="input-group">
-                                    <label>{t('login.enterOtp')} *</label>
+                                    <label>{t('login.enterOtp')} </label>
                                     <input
                                         type="text"
                                         placeholder="Enter 6 digit OTP"
