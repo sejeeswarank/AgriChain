@@ -4,6 +4,7 @@ import { useAuth } from '../auth/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { savePhoneEmailMapping, createUserProfile } from '../firebase';
 import axios from 'axios';
+import logo from '../assets/logo.png';
 
 const Signup = () => {
     // Form state
@@ -182,9 +183,12 @@ const Signup = () => {
     return (
         <div className="login-container">
             <div className="login-content">
-                <div className="logo-section">
-                    <h1 className="logo-title">AgriChain <span className="logo-subtitle">Insurance</span></h1>
-                    <p className="tagline">{t('auth.tagline')}</p>
+                <div className="logo-section" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '15px' }}>
+                    <img src={logo} alt="AgriChain Logo" style={{ height: '60px', width: 'auto' }} />
+                    <div style={{ textAlign: 'left' }}>
+                        <h1 className="logo-title" style={{ margin: 0, lineHeight: 1 }}>AgriChain <span className="logo-subtitle">Insurance</span></h1>
+                        <p className="tagline" style={{ margin: 0 }}>{t('auth.tagline')}</p>
+                    </div>
                 </div>
 
                 <div className="login-card">
