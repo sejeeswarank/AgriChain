@@ -205,7 +205,7 @@ const Login = () => {
         <div className="login-container">
             <div className="login-content">
                 <div className="logo-section" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '15px' }}>
-                    <img src={logo} alt="AgriChain Logo" style={{ height: '60px', width: 'auto' }} />
+                    <img src={logo} alt="AgriChain Logo" style={{ height: '80px', width: 'auto' }} />
                     <div style={{ textAlign: 'left' }}>
                         <h1 className="logo-title" style={{ margin: 0, lineHeight: 1.2 }}>AgriChain <span className="logo-subtitle">Insurance</span></h1>
                         <p className="tagline" style={{ margin: 0, marginTop: '12px' }}>{t('auth.tagline')}</p>
