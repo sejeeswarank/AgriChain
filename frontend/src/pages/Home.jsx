@@ -32,14 +32,14 @@ const Home = () => {
                 {/* 1. Hero Section (Top 60%) */}
                 <div style={{
                     flex: '3',
-                    padding: '40px',
+                    padding: '50px',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'center',
-                    background: 'linear-gradient(to bottom, rgba(16, 185, 129, 0.05), transparent)',
+                    background: 'linear-gradient(to bottom, rgba(16, 185, 129, 0.02), transparent)',
                     position: 'relative'
                 }}>
-                    {/* Inner Nav (Top aligned) */}
+                    {/* Inner Nav */}
                     <div style={{
                         position: 'absolute',
                         top: '30px',
@@ -47,122 +47,152 @@ const Home = () => {
                         right: '40px',
                         display: 'flex',
                         justifyContent: 'space-between',
-                        alignItems: 'center'
+                        alignItems: 'center',
+                        zIndex: 20
                     }}>
-                        <div style={{ display: 'flex', gap: '15px' }}>
-                            <div className="logo-title" style={{ fontSize: '1.5rem', marginRight: '20px' }}>AgriChain</div>
-                            {/* Pill Nav Items */}
-                            {['Dashboard', 'Policies', 'Risks'].map(item => (
-                                <button key={item} className="secondary-btn" style={{
-                                    width: 'auto',
-                                    padding: '8px 20px',
-                                    borderRadius: '50px',
-                                    border: '1px solid rgba(255,255,255,0.1)',
-                                    color: '#e2e8f0',
-                                    marginTop: 0
-                                }}>{item}</button>
-                            ))}
-                        </div>
+                        {/* LEFT SIDE: Login / Sign Up Button (User Requested) */}
                         <div style={{ display: 'flex', gap: '10px' }}>
-                            <button onClick={() => navigate('/login')} className="secondary-btn" style={{
+                            <button onClick={() => navigate('/login')} className="primary-btn" style={{
                                 width: 'auto',
                                 borderRadius: '50px',
-                                marginTop: 0,
-                                borderColor: '#10b981',
-                                color: '#10b981'
-                            }}>Login</button>
+                                padding: '10px 25px',
+                                fontSize: '0.9rem',
+                                marginBottom: 0,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                            }}>
+                                <span>Login / Sign Up</span>
+                                <span style={{ fontSize: '1.2em' }}>→</span>
+                            </button>
+                        </div>
+
+                        {/* RIGHT SIDE: Logo and Nav Items */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                            {/* Kshema-style simple nav */}
+                            {['Products', 'Claims', 'Support'].map(item => (
+                                <button key={item} style={{
+                                    background: 'transparent',
+                                    border: 'none',
+                                    color: '#94a3b8',
+                                    fontSize: '0.95rem',
+                                    cursor: 'pointer',
+                                    fontWeight: '500'
+                                }}>{item}</button>
+                            ))}
+                            <div className="logo-title" style={{ fontSize: '1.8rem', marginLeft: '10px' }}>AgriChain</div>
                         </div>
                     </div>
 
-                    {/* Hero Content */}
-                    <div style={{ maxWidth: '600px', marginTop: '40px' }}>
+                    {/* Hero Content - Adapted for "Agri Insurance" Authority */}
+                    <div style={{ maxWidth: '650px', marginTop: '40px', zIndex: 10 }}>
                         <h1 style={{
                             fontSize: '3.5rem',
-                            lineHeight: '1.1',
+                            lineHeight: '1.2',
                             marginBottom: '20px',
-                            background: 'linear-gradient(135deg, #ffffff, #94a3b8)',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent'
+                            fontWeight: '300', // Kshema style lighter weight
+                            color: '#ffffff'
                         }}>
-                            Decentralized <br />
-                            <span style={{ color: '#10b981', WebkitTextFillColor: '#10b981' }}>Crop Protection</span>
+                            Secure Your Harvest,<br />
+                            <span style={{ fontWeight: '600', color: '#10b981' }}>Insure Your Future.</span>
                         </h1>
-                        <p style={{ fontSize: '1.2rem', color: '#94a3b8', marginBottom: '30px', maxWidth: '450px' }}>
-                            Instant, transparent, parametric insurance powered by blockchain technology. Protect your harvest against climate risks.
+                        <p style={{ fontSize: '1.1rem', color: '#94a3b8', marginBottom: '35px', maxWidth: '500px', lineHeight: '1.6' }}>
+                            Comprehensive protection against non-preventable risks.
+                            Covering standing crops, prevented sowing, and post-harvest losses.
+                            <br /><span style={{ fontSize: '0.9rem', color: '#64748b', display: 'block', marginTop: '10px' }}>Aligned with PMFBY Standards • Powered by Blockchain</span>
                         </p>
-                        <button onClick={() => navigate('/signup')} className="primary-btn" style={{
-                            width: 'auto',
-                            borderRadius: '50px',
-                            padding: '15px 40px',
-                            fontSize: '1.1rem',
-                            display: 'inline-flex'
-                        }}>
-                            Get Protected →
-                        </button>
+                        <div style={{ display: 'flex', gap: '15px' }}>
+                            <button onClick={() => navigate('/signup')} className="primary-btn" style={{
+                                width: 'auto',
+                                borderRadius: '50px',
+                                padding: '15px 35px',
+                                fontSize: '1rem',
+                                marginBottom: 0
+                            }}>
+                                Get Protected
+                            </button>
+                            <button className="secondary-btn" style={{
+                                width: 'auto',
+                                borderRadius: '50px',
+                                padding: '15px 35px',
+                                fontSize: '1rem',
+                                marginTop: 0,
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                color: '#e2e8f0'
+                            }}>
+                                View Plans
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                {/* 2. Grid Section (Bottom 40%) */}
+                {/* 2. Grid Section (Bottom 40%) - Bringing in Essential details */}
                 <div style={{
                     flex: '2',
                     display: 'grid',
-                    gridTemplateColumns: '1fr 1fr 1fr',
-                    gap: '2px', // Thin gaps for border effect
-                    background: 'rgba(255, 255, 255, 0.05)', // Border color
-                    paddingTop: '1px' // Top border line
+                    gridTemplateColumns: '1.2fr 1fr 1fr', // First col slightly wider for text
+                    gap: '1px',
+                    background: 'rgba(255, 255, 255, 0.08)', // Faint border
+                    paddingTop: '1px'
                 }}>
 
-                    {/* Card 1: How It Works */}
-                    <div style={{ background: '#0f172a', padding: '30px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                        <h3 style={{ color: '#e2e8f0', margin: 0 }}>How It Works</h3>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', color: '#94a3b8', fontSize: '0.9rem' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <span style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', width: '24px', height: '24px', borderRadius: '50%', textAlign: 'center', lineHeight: '24px', fontSize: '0.8rem' }}>1</span>
-                                Select Crop Policy
+                    {/* Card 1: Essential Coverage (From SBI Research) */}
+                    <div style={{ background: '#0f172a', padding: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                        <h3 style={{ color: '#e2e8f0', marginBottom: '20px', fontSize: '1.2rem', fontWeight: '500' }}>Comprehensive Coverage</h3>
+                        <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#94a3b8', fontSize: '0.95rem' }}>
+                            <li style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <span style={{ color: '#10b981' }}>✓</span> Standing Crop (Yield Loss)
+                            </li>
+                            <li style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <span style={{ color: '#10b981' }}>✓</span> Prevented Sowing/Planting
+                            </li>
+                            <li style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <span style={{ color: '#10b981' }}>✓</span> Mid-Season Adversity
+                            </li>
+                            <li style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <span style={{ color: '#10b981' }}>✓</span> Post-Harvest Losses
+                            </li>
+                        </ul>
+                    </div>
+
+                    {/* Card 2: Simple Process (Kshema Style + Blockchain speed) */}
+                    <div style={{ background: '#0f172a', padding: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                        <h3 style={{ color: '#e2e8f0', marginBottom: '20px', fontSize: '1.2rem', fontWeight: '500' }}>Simple Process</h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                            <div style={{ display: 'flex', gap: '15px' }}>
+                                <div style={{ minWidth: '24px', height: '24px', borderRadius: '50%', background: '#1e293b', color: '#fff', textAlign: 'center', lineHeight: '24px', fontSize: '0.8rem' }}>1</div>
+                                <div>
+                                    <div style={{ color: '#e2e8f0', fontSize: '0.95rem' }}>Select Crop</div>
+                                    <div style={{ color: '#64748b', fontSize: '0.8rem' }}>Choose from authenticated list</div>
+                                </div>
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <span style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', width: '24px', height: '24px', borderRadius: '50%', textAlign: 'center', lineHeight: '24px', fontSize: '0.8rem' }}>2</span>
-                                Automated Monitoring
+                            <div style={{ display: 'flex', gap: '15px' }}>
+                                <div style={{ minWidth: '24px', height: '24px', borderRadius: '50%', background: '#1e293b', color: '#fff', textAlign: 'center', lineHeight: '24px', fontSize: '0.8rem' }}>2</div>
+                                <div>
+                                    <div style={{ color: '#e2e8f0', fontSize: '0.95rem' }}>Smart Monitor</div>
+                                    <div style={{ color: '#64748b', fontSize: '0.8rem' }}>AI & Satellite tracking</div>
+                                </div>
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <span style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', width: '24px', height: '24px', borderRadius: '50%', textAlign: 'center', lineHeight: '24px', fontSize: '0.8rem' }}>3</span>
-                                Instant Payout
+                            <div style={{ display: 'flex', gap: '15px' }}>
+                                <div style={{ minWidth: '24px', height: '24px', borderRadius: '50%', background: '#10b981', color: '#fff', textAlign: 'center', lineHeight: '24px', fontSize: '0.8rem' }}>3</div>
+                                <div>
+                                    <div style={{ color: '#e2e8f0', fontSize: '0.95rem' }}>Instant Payout</div>
+                                    <div style={{ color: '#64748b', fontSize: '0.8rem' }}>Direct to wallet</div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Card 2: Essential Feature (Smart Oracle) */}
-                    <div style={{ background: '#0f172a', padding: '30px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                    {/* Card 3: Trust & Stats (Validation) */}
+                    <div style={{ background: '#0f172a', padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px', textAlign: 'center' }}>
                         <div>
-                            <h3 style={{ color: '#e2e8f0', margin: 0, marginBottom: '10px' }}>Smart Monitoring</h3>
-                            <p style={{ color: '#94a3b8', fontSize: '0.9rem', margin: 0 }}>
-                                Real-time weather data integration via Chainlink oracles ensures purely objective claim triggers.
-                            </p>
+                            <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#10b981', lineHeight: '1' }}>24h</div>
+                            <div style={{ fontSize: '0.9rem', color: '#94a3b8', marginTop: '5px' }}>Claim Settlement</div>
                         </div>
-                        <div style={{
-                            height: '60px',
-                            background: 'linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0) 100%)',
-                            borderRadius: '12px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            padding: '0 15px',
-                            marginTop: '20px'
-                        }}>
-                            <span style={{ fontSize: '1.5rem' }}>🛰️</span>
-                            <span style={{ marginLeft: '10px', color: '#10b981', fontWeight: 'bold' }}>Active</span>
-                        </div>
-                    </div>
-
-                    {/* Card 3: Trust Stats */}
-                    <div style={{ background: '#0f172a', padding: '30px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '20px' }}>
-                        <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#ffffff' }}>100%</div>
-                            <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Payout Reliability</div>
-                        </div>
-                        <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', width: '100%' }}></div>
-                        <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#10b981' }}>&lt; 24h</div>
-                            <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Settlement Time</div>
+                        <div style={{ width: '50px', height: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
+                        <div>
+                            <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#0ea5e9', lineHeight: '1' }}>100%</div>
+                            <div style={{ fontSize: '0.9rem', color: '#94a3b8', marginTop: '5px' }}>Transparent Process</div>
                         </div>
                     </div>
 
