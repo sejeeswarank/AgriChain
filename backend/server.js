@@ -524,7 +524,6 @@ app.post('/api/send-email-otp', async (req, res) => {
 
                 const { result, reason } = kickboxResponse.data;
                 console.log(`Kickbox verification for ${email}: ${result} (${reason})`);
-
                 // Reject undeliverable or risky emails
                 if (result === 'undeliverable') {
                     return res.status(400).json({
@@ -533,9 +532,9 @@ app.post('/api/send-email-otp', async (req, res) => {
                     });
                 }
 
-                if (result === 'risky' && reason === 'disposable') {
+                if (result === 'risky' && (reason === 'disposable' || reason === 'low_quality')) {
                     return res.status(400).json({
-                        error: "Disposable email addresses are not allowed. Please use a permanent email.",
+                        error: "Disposable or low-quality email addresses are not allowed. Please use a permanent email.",
                         kickboxResult: result
                     });
                 }
