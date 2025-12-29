@@ -1,0 +1,95 @@
+Server running on port 5000
+P:\AgriChain\backend\node_modules\.pnpm\mongoose@7.8.8\node_modules\mongoose\lib\connection.js:816
+    err = new ServerSelectionError();
+          ^
+
+MongooseServerSelectionError: Could not connect to any servers in your MongoDB Atlas cluster. One common reason is that you're trying to access the database from an IP that isn't whitelisted. Make sure your current IP address is on your Atlas cluster's IP whitelist: https://www.mongodb.com/docs/atlas/security-whitelist/
+    at _handleConnectionErrors (P:\AgriChain\backend\node_modules\.pnpm\mongoose@7.8.8\node_modules\mongoose\lib\connection.js:816:11)
+    at NativeConnection.openUri (P:\AgriChain\backend\node_modules\.pnpm\mongoose@7.8.8\node_modules\mongoose\lib\connection.js:791:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async connectDB (P:\AgriChain\backend\db.js:29:19)
+    at async P:\AgriChain\backend\server.js:490:5 {
+  reason: TopologyDescription {
+    type: 'ReplicaSetNoPrimary',
+    servers: Map(3) {
+      'ac-gbbmufz-shard-00-02.1lnb3dj.mongodb.net:27017' => ServerDescription {
+        address: 'ac-gbbmufz-shard-00-02.1lnb3dj.mongodb.net:27017',
+        type: 'Unknown',
+        hosts: [],
+        passives: [],
+        arbiters: [],
+        tags: {},
+        minWireVersion: 0,
+        maxWireVersion: 0,
+        roundTripTime: -1,
+        lastUpdateTime: 111147527,
+        lastWriteDate: 0,
+        error: null,
+        topologyVersion: null,
+        setName: null,
+        setVersion: null,
+        electionId: null,
+        logicalSessionTimeoutMinutes: null,
+        primary: null,
+        me: null,
+        '$clusterTime': null
+      },
+      'ac-gbbmufz-shard-00-00.1lnb3dj.mongodb.net:27017' => ServerDescription {
+        address: 'ac-gbbmufz-shard-00-00.1lnb3dj.mongodb.net:27017',
+        type: 'Unknown',
+        hosts: [],
+        passives: [],
+        arbiters: [],
+        tags: {},
+        minWireVersion: 0,
+        maxWireVersion: 0,
+        roundTripTime: -1,
+        lastUpdateTime: 111147528,
+        lastWriteDate: 0,
+        error: null,
+        topologyVersion: null,
+        setName: null,
+        setVersion: null,
+        electionId: null,
+        logicalSessionTimeoutMinutes: null,
+        primary: null,
+        me: null,
+        '$clusterTime': null
+      },
+      'ac-gbbmufz-shard-00-01.1lnb3dj.mongodb.net:27017' => ServerDescription {
+        address: 'ac-gbbmufz-shard-00-01.1lnb3dj.mongodb.net:27017',
+        type: 'Unknown',
+        hosts: [],
+        passives: [],
+        arbiters: [],
+        tags: {},
+        minWireVersion: 0,
+        maxWireVersion: 0,
+        roundTripTime: -1,
+        lastUpdateTime: 111147528,
+        lastWriteDate: 0,
+        error: null,
+        topologyVersion: null,
+        setName: null,
+        setVersion: null,
+        electionId: null,
+        logicalSessionTimeoutMinutes: null,
+        primary: null,
+        me: null,
+        '$clusterTime': null
+      }
+    },
+    stale: false,
+    compatible: true,
+    heartbeatFrequencyMS: 10000,
+    localThresholdMS: 15,
+    setName: 'atlas-7ayb0r-shard-0',
+    maxElectionId: null,
+    maxSetVersion: null,
+    commonWireVersion: 0,
+    logicalSessionTimeoutMinutes: null
+  },
+  code: undefined
+}
+
+Node.js v24.11.1

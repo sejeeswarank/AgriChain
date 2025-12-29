@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './auth/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { WalletProvider } from './context/WalletContext';
 import LanguageSwitch from './components/LanguageSwitch';
+import Home from './pages/Home';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Signup from './pages/Signup';
@@ -24,7 +25,7 @@ const ProtectedRoute = ({ children }) => {
     }
 
     if (!user) {
-        return <Navigate to="/" replace />;
+        return <Navigate to="/login" replace />;
     }
 
     return children;
@@ -39,7 +40,8 @@ function App() {
                         <SpeedInsights />
                         <LanguageSwitch />
                         <Routes>
-                            <Route path="/" element={<Login />} />
+                            <Route path="/" element={<Home />} />
+                            <Route path="/login" element={<Login />} />
                             <Route path="/signup" element={<Signup />} />
                             <Route path="/wallet-connect" element={<WalletConnectPage />} />
                             <Route
