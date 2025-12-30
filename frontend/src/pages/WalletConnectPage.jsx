@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWallet } from '../context/WalletContext';
+import logo from '../assets/logo.png';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../auth/AuthContext';
 
@@ -33,9 +34,12 @@ const WalletConnectPage = () => {
     return (
         <div className="login-container">
             <div className="login-content">
-                <div className="logo-section">
-                    <h1 className="logo-title">AgriChain <span className="logo-subtitle">{t('common.insurance')}</span></h1>
-                    <p className="tagline">{t('wallet.subtitle')}</p>
+                <div className="logo-section" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '15px' }}>
+                    <img src={logo} alt="AgriChain Logo" style={{ height: '60px', width: 'auto' }} />
+                    <div style={{ textAlign: 'left' }}>
+                        <h1 className="logo-title" style={{ margin: 0, lineHeight: 1.2 }}>AgriChain <span className="logo-subtitle">{t('common.insurance')}</span></h1>
+                        <p className="tagline" style={{ margin: 0, marginTop: '5px' }}>{t('wallet.subtitle')}</p>
+                    </div>
                 </div>
 
                 <div className="login-card">

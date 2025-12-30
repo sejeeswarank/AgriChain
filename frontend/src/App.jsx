@@ -12,7 +12,7 @@ import Signup from './pages/Signup';
 import WalletConnectPage from './pages/WalletConnectPage';
 
 // Protected Route Component
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children, redirectTo = "/login" }) => {
     const { user, loading } = useAuth();
 
     if (loading) {
@@ -25,7 +25,7 @@ const ProtectedRoute = ({ children }) => {
     }
 
     if (!user) {
-        return <Navigate to="/login" replace />;
+        return <Navigate to={redirectTo} replace />;
     }
 
     return children;
@@ -47,7 +47,7 @@ function App() {
                             <Route
                                 path="/dashboard"
                                 element={
-                                    <ProtectedRoute>
+                                    <ProtectedRoute redirectTo="/">
                                         <Dashboard />
                                     </ProtectedRoute>
                                 }

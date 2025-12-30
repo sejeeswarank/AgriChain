@@ -18,7 +18,12 @@ export const LanguageProvider = ({ children }) => {
 
     const translations = {
         en,
-        ta
+        ta,
+        hi: en, // Placeholder
+        mr: en, // Placeholder
+        te: en, // Placeholder
+        kn: en, // Placeholder
+        ml: en  // Placeholder
     };
 
     // Load language from localStorage on mount
