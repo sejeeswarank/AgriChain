@@ -8,6 +8,7 @@ import { ethers } from 'ethers';
 import axios from 'axios';
 import { AgriChain } from '../abis/AgriChain';
 import PolicyCard from '../components/PolicyCard';
+import useMediaQuery from '../hooks/useMediaQuery';
 
 const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS;
 
@@ -15,7 +16,9 @@ const Dashboard = () => {
     const { user, userProfile, logout } = useAuth();
     const { walletAddress, isWalletConnected, connectWallet, isConnecting, disconnectWallet } = useWallet();
     const navigate = useNavigate();
-    const { t } = useLanguage();
+    const { t, language, changeLanguage } = useLanguage();
+    const isMobile = useMediaQuery('(max-width: 768px)');
+
 
     // --- UI State ---
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Collapsed by default
@@ -131,22 +134,28 @@ const Dashboard = () => {
         <div className="dashboard-layout" style={{
             display: 'flex',
             height: '100vh',
+            minHeight: '100dvh', // Use dynamic viewport height
             background: '#020617',
             overflow: 'hidden'
         }}>
 
             {/* --- SIDEBAR --- */}
             <aside style={{
-                width: isSidebarOpen ? '260px' : '80px', // Dynamic Width
+                position: isMobile ? 'absolute' : 'relative',
+                zIndex: 50,
+                height: '100%',
+                width: isMobile ? (isSidebarOpen ? '100%' : '0px') : (isSidebarOpen ? '260px' : '80px'), // Dynamic Width
                 background: 'rgba(15, 23, 42, 0.6)',
                 backdropFilter: 'blur(10px)',
-                borderRight: '1px solid rgba(255,255,255,0.05)',
-                padding: '30px 10px', // Reduced side padding for collapsed state
+                backdropFilter: 'blur(10px)',
+                borderRight: (isMobile && !isSidebarOpen) ? 'none' : '1px solid rgba(255,255,255,0.05)',
+                padding: (isMobile && !isSidebarOpen) ? '0' : '30px 10px 10px 10px',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
                 transition: 'width 0.3s ease', // Smooth transition
-                overflow: 'hidden'
+                overflow: 'hidden',
+                boxSizing: 'border-box' // Ensure padding is included in height
             }}>
                 <div>
                     {/* Toggle Button & Logo Container */}
@@ -166,9 +175,12 @@ const Dashboard = () => {
                         </button>
 
                         <div className="logo" style={{
-                            fontSize: '1.5rem',
+                            fontSize: '1.8rem',
                             fontWeight: 'bold',
-                            color: '#10b981',
+                            color: 'transparent', // Make text transparent for gradient
+                            background: 'linear-gradient(135deg, #10b981, #0ea5e9)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
                             marginLeft: isSidebarOpen ? '15px' : '0',
                             width: isSidebarOpen ? 'auto' : '0',
                             display: 'flex',
@@ -180,7 +192,7 @@ const Dashboard = () => {
                             whiteSpace: 'nowrap',
                             overflow: 'hidden'
                         }}>
-                            <img src={logo} alt="Logo" style={{ height: '24px', width: 'auto', minWidth: '24px' }} />
+                            <img src={logo} alt="Logo" style={{ height: '32px', width: 'auto', minWidth: '32px' }} />
                             AgriChain
                         </div>
                     </div>
@@ -222,6 +234,42 @@ const Dashboard = () => {
                             )
                         })}
                     </nav>
+
+                    {/* Language Switcher (Sidebar) */}
+                    <div style={{ marginTop: 'auto', marginBottom: '10px' }}>
+                        <button
+                            onClick={() => {
+                                const langs = ['en', 'ta', 'hi', 'ml'];
+                                const nextIndex = (langs.indexOf(language) + 1) % langs.length;
+                                changeLanguage(langs[nextIndex]);
+                            }}
+                            title={isSidebarOpen ? 'Click to change language' : `Language: ${(language || 'en').toUpperCase()}`}
+                            style={{
+                                background: 'transparent',
+                                color: '#94a3b8',
+                                border: 'none',
+                                padding: '12px',
+                                width: '100%',
+                                borderRadius: '12px',
+                                cursor: 'pointer',
+                                fontWeight: '500',
+                                display: 'flex', alignItems: 'center', justifyContent: isSidebarOpen ? 'flex-start' : 'center', gap: '12px',
+                                transition: 'all 0.2s',
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)'; e.currentTarget.style.color = '#10b981'; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#94a3b8'; }}
+                        >
+                            <div style={{ minWidth: '20px', display: 'flex', justifyContent: 'center' }}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                            </div>
+                            {isSidebarOpen && (
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1.2 }}>
+                                    <span style={{ fontSize: '1rem' }}>Language</span>
+                                    <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>{language === 'en' ? 'English' : language === 'ta' ? 'Tamil' : language === 'hi' ? 'Hindi' : 'Malayalam'}</span>
+                                </div>
+                            )}
+                        </button>
+                    </div>
                 </div>
 
                 <button onClick={() => { logout(); navigate('/'); }} title={!isSidebarOpen ? 'Logout' : ''} style={{
@@ -244,44 +292,104 @@ const Dashboard = () => {
 
 
             {/* --- MAIN CONTENT (Bento Grid) --- */}
-            <main style={{ flex: 1, padding: '30px', overflowY: 'auto' }}>
+            <main style={{ flex: 1, padding: isMobile ? '20px' : '30px', overflowY: 'auto' }}>
 
                 {/* Header (Profile + Connect) */}
-                <header style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px', alignItems: 'center' }}>
-                    <div>
-                        <h1 style={{ fontSize: '2rem', color: 'white', marginBottom: '5px' }}>Welcome back, {userProfile?.fullName || 'Farmer'}</h1>
-                        <p style={{ color: '#94a3b8' }}>Here's what's happening with your crops today.</p>
-                    </div>
-                    <div style={{ display: 'flex', gap: '15px' }}>
-                        <button onClick={isWalletConnected ? disconnectWallet : connectWallet} className={isWalletConnected ? 'secondary-btn' : 'primary-btn'} style={{
-                            borderRadius: '50px', padding: '10px 25px', marginBottom: 0, marginTop: 0, display: 'flex', alignItems: 'center', gap: '8px'
-                        }}>
-                            {isWalletConnected ? (
-                                <>
-                                    <div style={{ width: '8px', height: '8px', background: '#10b981', borderRadius: '50%' }}></div>
-                                    {walletAddress.substring(0, 6)}...
-                                </>
-                            ) : (
-                                <>
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                                    Connect Wallet
-                                </>
-                            )}
-                        </button>
-                    </div>
-                </header>
+                {/* Header (Profile + Connect) */}
+                {
+                    isMobile ? (
+                        /* MOBILE HEADER */
+                        <div style={{ marginBottom: '24px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    {/* Hamburger Trigger */}
+                                    <button
+                                        onClick={() => setIsSidebarOpen(true)}
+                                        style={{ background: 'transparent', border: 'none', color: '#94a3b8', padding: 0, cursor: 'pointer' }}
+                                    >
+                                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                                    </button>
+                                    {/* Language Icon (Mobile) */}
+                                    <button style={{ background: 'transparent', border: 'none', color: '#94a3b8', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                                    </button>
+                                    {/* Mobile Logo */}
+                                    <div style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px',
+                                        fontSize: '1.4rem',
+                                        fontWeight: 'bold',
+                                        background: 'linear-gradient(135deg, #10b981, #0ea5e9)',
+                                        WebkitBackgroundClip: 'text',
+                                        WebkitTextFillColor: 'transparent',
+                                        color: 'transparent'
+                                    }}>
+                                        <img src={logo} alt="Logo" style={{ height: '28px', width: 'auto' }} />
+                                        AgriChain
+                                    </div>
+                                </div>
+
+                                {/* Mobile Connect Button */}
+                                <button onClick={isWalletConnected ? disconnectWallet : connectWallet} className={isWalletConnected ? 'secondary-btn' : 'primary-btn'} style={{
+                                    borderRadius: '50px', padding: '8px 16px', fontSize: '0.85rem', marginBottom: 0, marginTop: 0, display: 'flex', alignItems: 'center', gap: '6px'
+                                }}>
+                                    {isWalletConnected ? (
+                                        <>
+                                            <div style={{ width: '6px', height: '6px', background: '#10b981', borderRadius: '50%' }}></div>
+                                            {walletAddress.substring(0, 4)}...
+                                        </>
+                                    ) : (
+                                        <>Connect</>
+                                    )}
+                                </button>
+                            </div>
+
+                            {/* Welcome Text Mobile */}
+                            <div>
+                                <h1 style={{ fontSize: '1.6rem', color: 'white', marginBottom: '4px', lineHeight: 1.2 }}>Welcome back, <br />{userProfile?.fullName || 'Farmer'}</h1>
+                                <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Here's what's happening today.</p>
+                            </div>
+                        </div>
+                    ) : (
+                        /* DESKTOP HEADER (UNCHANGED) */
+                        <header style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px', alignItems: 'center' }}>
+                            <div>
+                                <h1 style={{ fontSize: '2rem', color: 'white', marginBottom: '5px' }}>Welcome back, {userProfile?.fullName || 'Farmer'}</h1>
+                                <p style={{ color: '#94a3b8' }}>Here's what's happening with your crops today.</p>
+                            </div>
+                            <div style={{ display: 'flex', gap: '15px' }}>
+                                <button onClick={isWalletConnected ? disconnectWallet : connectWallet} className={isWalletConnected ? 'secondary-btn' : 'primary-btn'} style={{
+                                    borderRadius: '50px', padding: '10px 25px', marginBottom: 0, marginTop: 0, display: 'flex', alignItems: 'center', gap: '8px'
+                                }}>
+                                    {isWalletConnected ? (
+                                        <>
+                                            <div style={{ width: '8px', height: '8px', background: '#10b981', borderRadius: '50%' }}></div>
+                                            {walletAddress.substring(0, 6)}...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                                            Connect Wallet
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </header>
+                    )
+                }
 
 
                 <div className="bento-grid" style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(12, 1fr)',
+                    gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, 1fr)',
                     gridTemplateRows: 'repeat(auto-fill, minmax(100px, auto))',
                     gap: '20px'
                 }}>
 
                     {/* WIDGET 1: WEATHER ORACLE (Top Center) - Span 4 */}
                     <div style={{
-                        gridColumn: 'span 4',
+                        gridColumn: isMobile ? 'span 1' : 'span 4',
                         background: '#0f172a',
                         borderRadius: '24px',
                         padding: '24px',
@@ -304,7 +412,7 @@ const Dashboard = () => {
 
                     {/* WIDGET 2: STATS (Top Right) - Span 4 */}
                     <div style={{
-                        gridColumn: 'span 4',
+                        gridColumn: isMobile ? 'span 1' : 'span 4',
                         background: '#0f172a',
                         borderRadius: '24px',
                         padding: '24px',
@@ -319,7 +427,7 @@ const Dashboard = () => {
 
                     {/* WIDGET 3: WALLET BALANCE (Top Right) - Span 4 */}
                     <div style={{
-                        gridColumn: 'span 4',
+                        gridColumn: isMobile ? 'span 1' : 'span 4',
                         background: 'linear-gradient(135deg, #059669, #10b981)',
                         borderRadius: '24px',
                         padding: '24px',
@@ -333,7 +441,7 @@ const Dashboard = () => {
 
                     {/* WIDGET 4: NEW POLICY ACTION (Middle Left) - Span 8 */}
                     <div style={{
-                        gridColumn: 'span 8',
+                        gridColumn: isMobile ? 'span 1' : 'span 8',
                         gridRow: 'span 2',
                         background: 'rgba(30, 41, 59, 0.4)',
                         backdropFilter: 'blur(10px)',
@@ -345,7 +453,7 @@ const Dashboard = () => {
                             Get New Protection
                         </h2>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '20px' }}>
 
                             {/* Step 1: Location */}
                             <div>
@@ -394,7 +502,7 @@ const Dashboard = () => {
 
                     {/* WIDGET 5: POLICY LIST (Middle Right) - Span 4 */}
                     <div style={{
-                        gridColumn: 'span 4',
+                        gridColumn: isMobile ? 'span 1' : 'span 4',
                         gridRow: 'span 2',
                         background: '#0f172a',
                         borderRadius: '24px',

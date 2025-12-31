@@ -51,7 +51,7 @@ async function sendEmail(email, otp) {
                         <div style="background-color: #1e293bff; padding: 32px 20px; text-align: center;">
                              <div style="font-size: 26px; font-weight: bold; display: flex; align-items: center; justify-content: center;">
                                 <img src="https://agrichain.tech/logo.png" alt="AgriChain" style="height: 48px; width: auto; display: block; margin-right: 16px;">
-                                <span style="background: linear-gradient(135deg, #10b981, #0ea5e9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; color: #10b981; font-weight: bold;">AgriChain Insurance</span>
+                                <span style="color: #10b981; font-weight: bold;">AgriChain Insurance</span>
                              </div>
                         </div>
                         

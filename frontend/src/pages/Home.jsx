@@ -1,9 +1,23 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../assets/logo.png';
+import useMediaQuery from '../hooks/useMediaQuery';
+import { useState } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 
 const Home = () => {
     const navigate = useNavigate();
+    const isMobile = useMediaQuery('(max-width: 768px)');
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const { language, changeLanguage } = useLanguage(); // Language Hook
+    const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
+
+    const LANGUAGES = [
+        { code: 'en', label: 'English' },
+        { code: 'ta', label: 'தமிழ்' },
+        { code: 'hi', label: 'हिन्दी' },
+        { code: 'ml', label: 'മലയാളം' }
+    ];
 
 
 
@@ -49,76 +63,231 @@ const Home = () => {
             }}>
 
                 {/* --- TOP ROW: Navbar (Pill Shape) --- */}
-                <header style={{
-                    gridColumn: 'span 12',
-                    background: 'rgba(30, 41, 59, 0.4)',
-                    borderRadius: '24px',
-                    padding: '0 30px',
-                    height: '72px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    border: '1px solid rgba(255, 255, 255, 0.05)',
-                    overflow: 'hidden'
-                }}>
-                    {/* Left: Logo */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', height: '100%' }}>
-                        <img src={logo} alt="AgriChain Logo" style={{ height: '40px', width: 'auto' }} />
-                        <span style={{
-                            fontSize: '1.8em',
-                            fontWeight: 'bold',
-                            letterSpacing: '-0.5px',
-                            background: 'linear-gradient(135deg, #10b981, #0ea5e9)',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            lineHeight: 1.3, // Increased to show descenders (g, y, j)
-                            paddingBottom: '4px', // Space for descenders
-                            display: 'flex',
-                            alignItems: 'center'
-                        }}>
-                            AgriChain
-                        </span>
-                    </div>
+                {isMobile ? (
+                    /* MOBILE HEADER */
+                    <header style={{
+                        gridColumn: 'span 12',
+                        background: 'rgba(30, 41, 59, 0.4)',
+                        borderRadius: '24px',
+                        padding: '0 20px',
+                        height: '64px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        border: '1px solid rgba(255, 255, 255, 0.05)',
+                        position: 'relative',
+                        zIndex: 50
+                    }}>
+                        {/* Logo */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <img src={logo} alt="AgriChain" style={{ height: '28px', width: 'auto' }} />
+                            <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'white' }}>AgriChain</span>
+                        </div>
 
-                    {/* Center: Navigation */}
-                    <nav style={{ display: 'flex', gap: '30px', alignItems: 'center', height: '100%' }}>
-                        {['How It Works', 'Key Features', 'About'].map(item => (
-                            <a key={item} href={`#${item.replace(' ', '-').toLowerCase()}`} style={{
-                                color: '#94a3b8',
-                                textDecoration: 'none',
-                                fontSize: '0.95rem',
-                                fontWeight: '500',
-                                transition: 'color 0.2s',
+                        {/* Hamburger */}
+                        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '5px' }}>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                        </button>
+
+                        {/* Mobile Drawer */}
+                        {isMobileMenuOpen && (
+                            <div style={{
+                                position: 'absolute',
+                                top: '70px',
+                                left: 0,
+                                right: 0,
+                                background: '#0f172a',
+                                borderRadius: '24px',
+                                padding: '20px',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
                                 display: 'flex',
-                                alignItems: 'center',
-                                height: '100%'
-                            }} className="nav-link">
-                                {item}
-                            </a>
-                        ))}
-                    </nav>
+                                flexDirection: 'column',
+                                gap: '15px'
+                            }}>
+                                {['How It Works', 'Key Features', 'About'].map(item => (
+                                    <a key={item} href={`#${item.replace(' ', '-').toLowerCase()}`}
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '1rem', padding: '10px' }}>
+                                        {item}
+                                    </a>
+                                ))}
+                                {/* Language Selection (Mobile Drawer) */}
+                                <div style={{ borderTop: '1px solid #334155', paddingTop: '10px', marginTop: '5px' }}>
+                                    <div style={{ color: '#64748b', fontSize: '0.8rem', paddingLeft: '10px', marginBottom: '5px' }}>LANGUAGE</div>
+                                    {[
+                                        { code: 'en', label: 'English' },
+                                        { code: 'ta', label: 'தமிழ்' },
+                                        { code: 'hi', label: 'हिन्दी' },
+                                        { code: 'ml', label: 'മലയാളം' }
+                                    ].map(lang => (
+                                        <button
+                                            key={lang.code}
+                                            onClick={() => changeLanguage(lang.code)}
+                                            style={{
+                                                display: 'block',
+                                                width: '100%',
+                                                textAlign: 'left',
+                                                padding: '10px',
+                                                background: language === lang.code ? 'rgba(16, 185, 129, 0.1)' : 'transparent',
+                                                color: language === lang.code ? '#10b981' : '#94a3b8',
+                                                border: 'none',
+                                                fontSize: '0.95rem',
+                                                cursor: 'pointer',
+                                                fontWeight: language === lang.code ? 'bold' : 'normal',
+                                                borderRadius: '8px'
+                                            }}
+                                        >
+                                            {lang.label}
+                                        </button>
+                                    ))}
+                                </div>
+                                <div style={{ height: '1px', background: '#334155', margin: '5px 0' }}></div>
+                                <button onClick={() => navigate('/login')} style={{ width: '100%', padding: '12px', background: 'transparent', border: '1px solid #475569', color: 'white', borderRadius: '12px' }}>Login</button>
+                                <button onClick={() => navigate('/signup')} style={{ width: '100%', padding: '12px', background: '#10b981', border: 'none', color: 'white', borderRadius: '12px', fontWeight: 'bold' }}>Sign Up</button>
+                            </div>
+                        )}
+                    </header>
+                ) : (
+                    /* DESKTOP HEADER */
+                    <header style={{
+                        gridColumn: 'span 12',
+                        background: 'rgba(30, 41, 59, 0.4)',
+                        borderRadius: '24px',
+                        padding: '0 30px',
+                        height: '72px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        border: '1px solid rgba(255, 255, 255, 0.05)',
+                        // overflow: 'hidden' // Removed to allow dropdown
+                    }}>
+                        {/* Left: Logo */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', height: '100%' }}>
+                            <img src={logo} alt="AgriChain Logo" style={{ height: '40px', width: 'auto' }} />
+                            <span style={{
+                                fontSize: '1.8em',
+                                fontWeight: 'bold',
+                                letterSpacing: '-0.5px',
+                                background: 'linear-gradient(135deg, #10b981, #0ea5e9)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                lineHeight: 1.3, // Increased to show descenders (g, y, j)
+                                paddingBottom: '4px', // Space for descenders
+                                display: 'flex',
+                                alignItems: 'center'
+                            }}>
+                                AgriChain
+                            </span>
+                        </div>
 
-                    {/* Right: Actions */}
-                    <div style={{ display: 'flex', gap: '15px', alignItems: 'center', height: '100%' }}>
-                        <button onClick={() => navigate('/login')} className="secondary-btn" style={{
-                            padding: '8px 20px',
-                            borderRadius: '50px',
-                            fontSize: '0.9rem',
-                            margin: 0 // Reset margins
-                        }}>
-                            Login
-                        </button>
-                        <button onClick={() => navigate('/signup')} className="primary-btn" style={{
-                            width: 'auto',
-                            borderRadius: '50px',
-                            padding: '8px 24px',
-                            fontSize: '0.9rem',
-                            marginBottom: 0 // Reset margins
-                        }}>
-                            Sign Up
-                        </button>
-                    </div>
-                </header>
+                        {/* Center: Navigation */}
+                        <nav style={{ display: 'flex', gap: '30px', alignItems: 'center', height: '100%' }}>
+                            {['How It Works', 'Key Features', 'About'].map(item => (
+                                <a key={item} href={`#${item.replace(' ', '-').toLowerCase()}`} style={{
+                                    color: '#94a3b8',
+                                    textDecoration: 'none',
+                                    fontSize: '0.95rem',
+                                    fontWeight: '500',
+                                    transition: 'color 0.2s',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    height: '100%'
+                                }} className="nav-link">
+                                    {item}
+                                </a>
+                            ))}
+                        </nav>
+
+                        {/* Right: Actions */}
+                        <div style={{ display: 'flex', gap: '15px', alignItems: 'center', height: '100%' }}>
+                            {/* Language Dropdown (Desktop) */}
+                            <div style={{ position: 'relative', height: '100%', display: 'flex', alignItems: 'center' }}>
+                                <button
+                                    onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
+                                    style={{
+                                        background: 'transparent',
+                                        border: 'none',
+                                        color: '#94a3b8',
+                                        fontSize: '0.9rem',
+                                        fontWeight: '500',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        padding: '8px',
+                                        borderRadius: '8px',
+                                        transition: 'background 0.2s',
+                                        height: '40px' // Match button height
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+                                    onMouseLeave={(e) => e.currentTarget.style.color = '#94a3b8'}
+                                >
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                                    <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>
+                                        Language
+                                    </span>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: isLanguageDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                </button>
+                                {isLanguageDropdownOpen && (
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: 'calc(100% + 4px)',
+                                        right: 0,
+                                        background: '#1e293b',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        borderRadius: '12px',
+                                        padding: '6px',
+                                        minWidth: '140px',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '2px',
+                                        boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
+                                        zIndex: 100
+                                    }}>
+                                        {LANGUAGES.map(lang => (
+                                            <button
+                                                key={lang.code}
+                                                onClick={() => { changeLanguage(lang.code); setIsLanguageDropdownOpen(false); }}
+                                                style={{
+                                                    background: language === lang.code ? 'rgba(16, 185, 129, 0.1)' : 'transparent',
+                                                    color: language === lang.code ? '#10b981' : '#cbd5e1',
+                                                    border: 'none',
+                                                    padding: '8px 12px',
+                                                    borderRadius: '8px',
+                                                    cursor: 'pointer',
+                                                    textAlign: 'left',
+                                                    fontSize: '0.9rem',
+                                                    fontWeight: language === lang.code ? 600 : 400
+                                                }}
+                                            >
+                                                {lang.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            <button onClick={() => navigate('/login')} className="secondary-btn" style={{
+                                padding: '8px 20px',
+                                borderRadius: '50px',
+                                fontSize: '0.9rem',
+                                margin: 0 // Reset margins
+                            }}>
+                                Login
+                            </button>
+                            <button onClick={() => navigate('/signup')} className="primary-btn" style={{
+                                width: 'auto',
+                                borderRadius: '50px',
+                                padding: '8px 24px',
+                                fontSize: '0.9rem',
+                                marginBottom: 0 // Reset margins
+                            }}>
+                                Sign Up
+                            </button>
+                        </div>
+                    </header>
+                )}
 
                 {/* --- MIDDLE ROW: Hero Section (Big Card) --- */}
                 <section style={{
@@ -164,7 +333,7 @@ const Home = () => {
                                 }}>
                                     Blockchain Powered Parametric Insurance
                                 </div>
-                                <h1 style={{ fontSize: '3.5rem', fontWeight: '700', lineHeight: 1.1, marginBottom: '20px', color: 'white' }}>
+                                <h1 style={{ fontSize: isMobile ? '2.5rem' : '3.5rem', fontWeight: '700', lineHeight: 1.1, marginBottom: '20px', color: 'white' }}>
                                     Secure Harvests,<br />
                                     <span style={{ color: '#10b981' }}>Instant Payouts.</span>
                                 </h1>
@@ -188,12 +357,12 @@ const Home = () => {
                     {/* --- BOTTOM ROW: Feature Bento Grid (Kshema-style USPs) --- */}
                     <div className="features-grid" style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(12, 1fr)',
+                        gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, 1fr)',
                         gap: '16px'
                     }}>
                         {/* USP 1: 8 Perils Coverage (Span 8) */}
                         <div style={{
-                            gridColumn: 'span 8',
+                            gridColumn: isMobile ? 'span 1' : 'span 8',
                             background: '#0f172a',
                             padding: '30px',
                             borderRadius: '24px',
@@ -240,7 +409,7 @@ const Home = () => {
 
                         {/* USP 2: Technology (Span 4) */}
                         <div style={{
-                            gridColumn: 'span 4',
+                            gridColumn: isMobile ? 'span 1' : 'span 4',
                             background: 'linear-gradient(135deg, #0f172a, #1e293b)',
                             padding: '30px',
                             borderRadius: '24px',
@@ -273,7 +442,7 @@ const Home = () => {
 
                         {/* USP 3: Empowering Farmers (Span 6) */}
                         <div style={{
-                            gridColumn: 'span 6',
+                            gridColumn: isMobile ? 'span 1' : 'span 6',
                             background: '#0f172a',
                             padding: '30px',
                             borderRadius: '24px',
@@ -294,7 +463,7 @@ const Home = () => {
 
                         {/* USP 4: Precise Premiums (Span 6) */}
                         <div style={{
-                            gridColumn: 'span 6',
+                            gridColumn: isMobile ? 'span 1' : 'span 6',
                             background: '#0f172a',
                             padding: '30px',
                             borderRadius: '24px',
@@ -322,7 +491,7 @@ const Home = () => {
                     }}>
                         <h2 style={{ textAlign: 'center', fontSize: '2rem', marginBottom: '40px', color: 'white' }}>How AgriChain Works</h2>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)', gap: '20px' }}>
                             {[
                                 { step: '1', title: 'Register & Verify', desc: 'Secure farmer registration with Digital KYC. Wallet connection sets up your unique identity.' },
                                 { step: '2', title: 'Select Protection', desc: 'Browse plans for your specific crop and region. Customize coverage against 8+ perils.' },
@@ -392,7 +561,7 @@ const Home = () => {
                         borderTop: '1px solid rgba(255,255,255,0.05)',
                         marginTop: '40px'
                     }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr 1.5fr', gap: '40px', marginBottom: '40px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.5fr 1fr 1fr 1.5fr', gap: '40px', marginBottom: '40px' }}>
                             {/* Column 1: Brand */}
                             <div>
                                 <div className="logo-section" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>

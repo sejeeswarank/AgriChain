@@ -38,7 +38,6 @@ function App() {
                 <WalletProvider>
                     <Router>
                         <SpeedInsights />
-                        <LanguageSwitch />
                         <Routes>
                             <Route path="/" element={<Home />} />
                             <Route path="/login" element={<Login />} />
