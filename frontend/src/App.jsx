@@ -1,6 +1,7 @@
 import React from 'react';
 import { SpeedInsights } from "@vercel/speed-insights/react"
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { WalletProvider } from './context/WalletContext';
@@ -54,6 +55,7 @@ function App() {
                             <Route path="*" element={<Navigate to="/" />} />
                         </Routes>
                     </Router>
+                    <SpeedInsights />
                 </WalletProvider>
             </AuthProvider>
         </LanguageProvider>
