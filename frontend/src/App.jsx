@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './auth/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { WalletProvider } from './context/WalletContext';
-import LanguageSwitch from './components/LanguageSwitch';
+import PropTypes from 'prop-types';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -29,6 +29,11 @@ const ProtectedRoute = ({ children, redirectTo = "/login" }) => {
     }
 
     return children;
+};
+
+ProtectedRoute.propTypes = {
+    children: PropTypes.node,
+    redirectTo: PropTypes.string
 };
 
 function App() {

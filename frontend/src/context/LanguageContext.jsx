@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { en } from '../translations/en';
 import { ta } from '../translations/ta';
 
@@ -93,4 +94,8 @@ export const LanguageProvider = ({ children }) => {
             {children}
         </LanguageContext.Provider>
     );
+};
+
+LanguageProvider.propTypes = {
+    children: PropTypes.node
 };

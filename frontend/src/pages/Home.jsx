@@ -1,8 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../assets/logo.png';
 import useMediaQuery from '../hooks/useMediaQuery';
-import { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 
 const Home = () => {
@@ -391,8 +390,8 @@ const Home = () => {
                                     { name: 'Earthquake', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg> },
                                     { name: 'Hailstorm', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 16.2A4.5 4.5 0 0 0 5.1 14"></path><path d="M6 20v1"></path><path d="M10 20v1"></path><path d="M14 20v1"></path></svg> }, // Placeholder
                                     { name: 'Pest Attack', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 10h.01"></path><path d="M14 8h.01"></path><path d="M10 6h.01"></path><path d="M6 4h.01"></path></svg> }  // Placeholder
-                                ].map((peril, i) => (
-                                    <div key={i} style={{
+                                ].map((peril) => (
+                                    <div key={peril.name} style={{
                                         padding: '15px 10px',
                                         background: 'rgba(30, 41, 59, 0.4)',
                                         borderRadius: '16px',
@@ -497,8 +496,8 @@ const Home = () => {
                                 { step: '2', title: 'Select Protection', desc: 'Browse plans for your specific crop and region. Customize coverage against 8+ perils.' },
                                 { step: '3', title: 'Smart Monitor', desc: 'Our Oracle & Satellite tech monitors your farm coordinates 24/7 for weather events.' },
                                 { step: '4', title: 'Instance Payout', desc: 'When a trigger event (e.g. Flood) is verified, the Smart Contract pays you instantly.' }
-                            ].map((s, i) => (
-                                <div key={i} style={{ background: '#020617', padding: '25px', borderRadius: '20px', border: '1px solid #1e293b', position: 'relative' }}>
+                            ].map((s) => (
+                                <div key={s.step} style={{ background: '#020617', padding: '25px', borderRadius: '20px', border: '1px solid #1e293b', position: 'relative' }}>
                                     <div style={{
                                         position: 'absolute', top: -15, left: 20,
                                         width: '40px', height: '40px', background: '#0f172a', color: '#10b981', borderRadius: '12px',
@@ -579,10 +578,10 @@ const Home = () => {
                             <div>
                                 <h4 style={{ color: 'white', marginBottom: '20px' }}>Quick Links</h4>
                                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#94a3b8', fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                    <li><a href="#" style={{ color: 'inherit', textDecoration: 'none' }}>Home</a></li>
+                                    <li><a href="#!" style={{ color: 'inherit', textDecoration: 'none' }}>Home</a></li>
                                     <li><a href="#how-it-works" style={{ color: 'inherit', textDecoration: 'none' }}>How it Works</a></li>
-                                    <li><a href="#" style={{ color: 'inherit', textDecoration: 'none' }}>Our Products</a></li>
-                                    <li><a href="#" style={{ color: 'inherit', textDecoration: 'none' }}>Claims Process</a></li>
+                                    <li><a href="#!" style={{ color: 'inherit', textDecoration: 'none' }}>Our Products</a></li>
+                                    <li><a href="#!" style={{ color: 'inherit', textDecoration: 'none' }}>Claims Process</a></li>
                                 </ul>
                             </div>
 
@@ -590,10 +589,10 @@ const Home = () => {
                             <div>
                                 <h4 style={{ color: 'white', marginBottom: '20px' }}>Legal</h4>
                                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#94a3b8', fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                    <li><a href="#" style={{ color: 'inherit', textDecoration: 'none' }}>Privacy Policy</a></li>
-                                    <li><a href="#" style={{ color: 'inherit', textDecoration: 'none' }}>Terms of Service</a></li>
-                                    <li><a href="#" style={{ color: 'inherit', textDecoration: 'none' }}>Cookie Policy</a></li>
-                                    <li><a href="#" style={{ color: 'inherit', textDecoration: 'none' }}>Disclaimers</a></li>
+                                    <li><a href="#!" style={{ color: 'inherit', textDecoration: 'none' }}>Privacy Policy</a></li>
+                                    <li><a href="#!" style={{ color: 'inherit', textDecoration: 'none' }}>Terms of Service</a></li>
+                                    <li><a href="#!" style={{ color: 'inherit', textDecoration: 'none' }}>Cookie Policy</a></li>
+                                    <li><a href="#!" style={{ color: 'inherit', textDecoration: 'none' }}>Disclaimers</a></li>
                                 </ul>
                             </div>
 

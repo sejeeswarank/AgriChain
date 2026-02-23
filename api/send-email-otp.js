@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const { Resend } = require('resend');
 const { EmailOTP } = require('../backend/models');
 const connectDB = require('../backend/db');
-const crypto = require('crypto');
+const crypto = require('node:crypto');
 const axios = require('axios');
 const admin = require('firebase-admin');
 
@@ -15,7 +15,7 @@ if (!admin.apps.length) {
         admin.initializeApp({
             credential: admin.credential.cert({
                 projectId: process.env.FIREBASE_PROJECT_ID,
-                privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+                privateKey: process.env.FIREBASE_PRIVATE_KEY?.replaceAll('\\n', '\n'),
                 clientEmail: process.env.FIREBASE_CLIENT_EMAIL
             })
         });
@@ -41,7 +41,7 @@ async function sendEmail(email, otp) {
 
     if (resend && process.env.RESEND_API_KEY) {
         try {
-            const { data, error } = await resend.emails.send({
+            const { error } = await resend.emails.send({
                 from: 'AgriChain <noreply@agrichain.tech>',
                 to: [email],
                 subject: 'Your AgriChain Verification Code',
@@ -87,8 +87,21 @@ async function sendEmail(email, otp) {
     }
 }
 
+// Helper: Verify Kickbox
+async function verifyKickbox(email) {
+    if (process.env.KICKBOX_API_KEY) {
+        try {
+            const kRes = await axios.get(`https://api.kickbox.com/v2/verify?email=${encodeURIComponent(email)}&apikey=${process.env.KICKBOX_API_KEY}`);
+            if (kRes.data.result === 'undeliverable') return false;
+        } catch (error_) {
+            console.warn("Kickbox skipped due to error:", error_.message);
+        }
+    }
+    return true;
+}
+
 // Main Vercel Serverless Handler
-module.exports = async (req, res) => {
+const sendEmailOtpHandler = async (req, res) => {
     // 1. CORS & Methods
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -130,13 +143,9 @@ module.exports = async (req, res) => {
         }
 
         // 3. Optional: Kickbox Verification
-        if (process.env.KICKBOX_API_KEY) {
-            try {
-                const kRes = await axios.get(`https://api.kickbox.com/v2/verify?email=${encodeURIComponent(email)}&apikey=${process.env.KICKBOX_API_KEY}`);
-                if (kRes.data.result === 'undeliverable') return res.status(400).json({ error: "Undeliverable Email" });
-            } catch (kErr) {
-                console.warn("Kickbox skipped due to error:", kErr.message);
-            }
+        const isDeliverable = await verifyKickbox(email);
+        if (!isDeliverable) {
+            return res.status(400).json({ error: "Undeliverable Email" });
         }
 
         // 4. Generate Logic
@@ -187,3 +196,5 @@ module.exports = async (req, res) => {
         });
     }
 };
+
+module.exports = sendEmailOtpHandler;
