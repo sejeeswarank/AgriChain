@@ -2,7 +2,7 @@
     "name": "agrichain-frontend",
     "private": true,
     "version": "0.0.0",
-    "packageManager": "pnpm@10.0.0",
+    "packageManager": "pnpm@9.15.4",
     "type": "module",
     "scripts": {
         "dev": "vite",
