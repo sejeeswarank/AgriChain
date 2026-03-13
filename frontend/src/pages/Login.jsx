@@ -23,7 +23,6 @@ const Login = () => {
     // UI state
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [otpSent, setOtpSent] = useState(false);
 
     const { user, loginWithEmailPassword, loginWithOTP } = useAuth();
     const { isWalletConnected, connectWallet } = useWallet();
@@ -52,6 +51,16 @@ const Login = () => {
         }
     };
 
+    // Map Firebase error codes and messages to user-friendly strings
+    const getErrorMessage = (err) => {
+        const msg = err.message || err.code || '';
+        if (msg.includes('invalid-credential')) return "Oops! Incorrect email or password. Double-check your keys!";
+        if (msg.includes('user-not-found')) return "We couldn't find an account with that email. Time to sign up?";
+        if (msg.includes('wrong-password')) return "Invalid password. Try again?";
+        if (msg.includes('too-many-requests')) return "Whoa there! Too many failed attempts. Take a breather and try again later.";
+        return msg || 'Login failed. Please try again.';
+    };
+
     // Handle login with Password
     const handlePasswordLogin = async () => {
         setError('');
@@ -63,9 +72,7 @@ const Login = () => {
             const result = await loginWithEmailPassword(targetEmail, password);
 
             if (result.success) {
-                // Check wallet connection
                 if (!isWalletConnected) {
-                    // Prompt to connect wallet
                     const walletResult = await connectWallet();
                     if (!walletResult.success) {
                         console.log('Wallet not connected, proceeding anyway');
@@ -73,37 +80,11 @@ const Login = () => {
                 }
                 navigate('/dashboard');
             } else {
-                let msg = result.error || 'Invalid credentials. Please try again.';
-                // Catchy error messages logic
-                if (msg.includes('invalid-credential') || msg.includes('auth/invalid-credential')) {
-                    msg = "Oops! We couldn't find your account or the password is wrong. Time to Sign Up?";
-                } else if (msg.includes('user-not-found') || msg.includes('auth/user-not-found')) {
-                    msg = "We couldn't find an account with that email. Time to sign up?";
-                } else if (msg.includes('wrong-password') || msg.includes('auth/wrong-password')) {
-                    msg = "Invalid password. Try again?";
-                } else if (msg.includes('too-many-requests') || msg.includes('auth/too-many-requests')) {
-                    msg = "Whoa there! Too many failed attempts. Take a breather and try again later.";
-                }
-                setError(msg);
+                setError(getErrorMessage({ message: result.error }));
             }
         } catch (err) {
             console.error('Login error:', err);
-
-            // Catchy error messages
-            let msg = 'Login failed. Please try again.';
-            if (err.code === 'auth/invalid-credential' || err.message.includes('invalid-credential')) {
-                msg = "Oops! Incorrect email or password. Double-check your keys!";
-            } else if (err.code === 'auth/user-not-found' || err.message.includes('user-not-found')) {
-                msg = "We couldn't find an account with that email. Time to sign up?";
-            } else if (err.code === 'auth/wrong-password' || err.message.includes('wrong-password')) {
-                msg = "Invalid password. Try again?";
-            } else if (err.code === 'auth/too-many-requests') {
-                msg = "Whoa there! Too many failed attempts. Take a breather and try again later.";
-            } else if (err.message) {
-                msg = err.message;
-            }
-
-            setError(msg);
+            setError(getErrorMessage(err));
         }
 
         setLoading(false);
@@ -124,7 +105,6 @@ const Login = () => {
             });
 
             if (response.data.success) {
-                setOtpSent(true);
                 setStep(2);
             } else {
                 setError(response.data.error || 'Failed to send OTP');
@@ -192,12 +172,10 @@ const Login = () => {
 
         if (authMethod === 'password') {
             handlePasswordLogin();
+        } else if (step === 1) {
+            handleSendOTP();
         } else {
-            if (step === 1) {
-                handleSendOTP();
-            } else {
-                handleOTPLogin();
-            }
+            handleOTPLogin();
         }
     };
 
@@ -309,13 +287,10 @@ const Login = () => {
                                 )}
 
                                 <button className="primary-btn" type="submit" disabled={loading}>
-                                    {loading ? (
-                                        <span className="spinner"></span>
-                                    ) : authMethod === 'password' ? (
-                                        t('login.signIn')
-                                    ) : (
-                                        t('login.sendOtp')
-                                    )}
+                                    {(() => {
+                                        if (loading) return <span className="spinner"></span>;
+                                        return authMethod === 'password' ? t('login.signIn') : t('login.sendOtp');
+                                    })()}
                                 </button>
                             </>
                         )}
@@ -341,7 +316,7 @@ const Login = () => {
                                         type="text"
                                         placeholder="Enter 6 digit OTP"
                                         value={otp}
-                                        onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                        onChange={(e) => setOtp(e.target.value.replaceAll(/\D/g, '').slice(0, 6))}
                                         maxLength="6"
                                         style={{
                                             textAlign: 'center',

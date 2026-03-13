@@ -16,8 +16,7 @@ const Signup = () => {
 
     // OTP state
     const [otp, setOtp] = useState('');
-    const [otpSent, setOtpSent] = useState(false);
-    const [otpVerified, setOtpVerified] = useState(false);
+
 
     // UI state
     const [step, setStep] = useState(1); // 1: Form, 2: OTP Verification
@@ -53,7 +52,7 @@ const Signup = () => {
             return false;
         }
 
-        if (!phoneNumber || phoneNumber.length !== 10) {
+        if (!phoneNumber?.length || phoneNumber.length !== 10) {
             setError('Valid 10-digit mobile number is required');
             return false;
         }
@@ -116,7 +115,7 @@ const Signup = () => {
     const handleVerifyOTP = async () => {
         setError('');
 
-        if (!otp || otp.length !== 6) {
+        if (!otp?.length || otp.length !== 6) {
             setError('Please enter a valid 6-digit OTP');
             return;
         }
@@ -249,7 +248,7 @@ const Signup = () => {
                                             type="tel"
                                             placeholder="9876543210"
                                             value={phoneNumber}
-                                            onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                                            onChange={(e) => setPhoneNumber(e.target.value.replaceAll(/\D/g, '').slice(0, 10))}
                                             maxLength="10"
                                             required
                                             style={{ borderRadius: '0 8px 8px 0', borderLeft: 'none' }}
@@ -300,7 +299,7 @@ const Signup = () => {
                                         type="text"
                                         placeholder="Enter 6 digit OTP"
                                         value={otp}
-                                        onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                        onChange={(e) => setOtp(e.target.value.replaceAll(/\D/g, '').slice(0, 6))}
                                         maxLength="6"
                                         style={{
                                             textAlign: 'center',

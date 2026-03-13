@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { en } from '../translations/en';
 import { ta } from '../translations/ta';
@@ -45,7 +45,7 @@ export const LanguageProvider = ({ children }) => {
         const currentTranslations = translations[currentLanguage];
 
         // First try direct key lookup (for dot notation strings as keys)
-        if (currentTranslations && currentTranslations[key]) {
+        if (currentTranslations?.[key]) {
             return currentTranslations[key];
         }
 
@@ -67,7 +67,7 @@ export const LanguageProvider = ({ children }) => {
         }
 
         // Final fallback: try English
-        if (currentLanguage !== 'en' && translations.en && translations.en[key]) {
+        if (currentLanguage !== 'en' && translations.en?.[key]) {
             return translations.en[key];
         }
 
@@ -81,13 +81,13 @@ export const LanguageProvider = ({ children }) => {
         }
     };
 
-    const value = {
+    const value = useMemo(() => ({
         currentLanguage,
         switchLanguage,
         t,
         isTamil: currentLanguage === 'ta',
         isEnglish: currentLanguage === 'en'
-    };
+    }), [currentLanguage, switchLanguage, t]);
 
     return (
         <LanguageContext.Provider value={value}>
