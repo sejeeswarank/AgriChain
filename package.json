@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "AgriChain is a full-stack decentralized application (dApp) that provides automated crop insurance based on rainfall data. If rainfall drops below a specified threshold, farmers are automatically paid out via smart contract, verified by an off-chain weather oracle.",
   "main": "hardhat.config.js",
+  "packageManager": "pnpm@10.0.0",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "node scripts/start_dev.js",
