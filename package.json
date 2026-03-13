@@ -8,7 +8,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "node scripts/start_dev.js",
     "deploy": "npx hardhat run scripts/deploy.js --network sepolia",
-    "build": "pnpm install && pnpm run build"
+    "build": "pnpm run build"
   },
   "keywords": [],
   "author": "",
